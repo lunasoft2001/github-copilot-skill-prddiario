@@ -18,6 +18,7 @@ Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados
 ```
 prd-diario/
 ├── SKILL.md                            # Documentación principal (5 fases)
+├── config.json                         # Configuración centralizada
 ├── scripts/
 │   ├── create_daily_prd.py            # Crea nuevo PRD_YYYYMMDD.md
 │   ├── create_daily_prd.ps1           # Versión PowerShell
@@ -72,13 +73,42 @@ Simplemente pide lo que necesites:
 "Genera el reporte de horas de hoy"
 ```
 
+### ⚙️ Configuración
+
+El skill incluye un archivo `config.json` que define la carpeta de salida por defecto:
+
+```json
+{
+  "prd_output_directory": "~/Documents/prd_diarios"
+}
+```
+
+**Cómo funciona:**
+- Los scripts leen automáticamente `config.json` al inicio
+- Los archivos se guardan en `~/Documents/prd_diarios/` por defecto
+- Puedes sobrescribir la configuración con argumentos `--path` o `--output`
+- Totalmente backward compatible
+
+**Cambiar la carpeta por defecto:**
+Edita `config.json` y cambia la ruta deseada. Por ejemplo:
+```json
+{
+  "prd_output_directory": "~/Dropbox/PRDs"
+}
+```
+
 ### Scripts Directos
 
 #### Crear PRD Nuevo
 
 **Python:**
 ```bash
-python scripts/create_daily_prd.py [--date 2026-02-16] [--output ./path]
+python scripts/create_daily_prd.py
+# → Crea: ~/Documents/prd_diarios/PRD_260216.md
+
+# Con fecha específica:
+python scripts/create_daily_prd.py --date 20260217
+# → Crea: ~/Documents/prd_diarios/PRD_260217.md
 ```
 
 **PowerShell:**
