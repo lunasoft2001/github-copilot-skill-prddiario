@@ -1,6 +1,6 @@
 # PRD Diario - GitHub Copilot Skill
 
-Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados con formato jerárquico legible. Incluye generación automática de reportes de horas trabajadas.
+Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados con formato jerárquico legible. Incluye generación automática de reportes de horas y dashboard visual HTML interactivo.
 
 ## 🎯 Características
 
@@ -8,6 +8,7 @@ Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados
 ✅ **Timestamps precisos** - Registra hora exacta de cada tarea  
 ✅ **Documentación completa** - Descripción + Solución para auditoría  
 ✅ **Reportes automáticos de horas** - Scripts Python/PowerShell generan reportes diarios  
+✅ **Dashboard visual HTML** - Dashboard interactivo con gráficos y tema light/dark  
 ✅ **Gestión de pendientes** - Seguimiento de tareas incompletas  
 ✅ **Git-friendly** - Markdown puro, fácil de versionear  
 ✅ **Scripts reutilizables** - Python y PowerShell para toda la automatización  
@@ -16,12 +17,14 @@ Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados
 
 ```
 prd-diario/
-├── SKILL.md                            # Documentación principal
+├── SKILL.md                            # Documentación principal (5 fases)
 ├── scripts/
 │   ├── create_daily_prd.py            # Crea nuevo PRD_YYYYMMDD.md
 │   ├── create_daily_prd.ps1           # Versión PowerShell
 │   ├── generate_hours_report.py       # Genera HORAS_PRD_YYYYMMDD.md
-│   └── generate_hours_report.ps1      # Versión PowerShell
+│   ├── generate_hours_report.ps1      # Versión PowerShell
+│   ├── generate_dashboard.py          # Genera PRD_YYYYMMDD_DASHBOARD.html
+│   └── generate_dashboard.ps1         # Versión PowerShell
 ├── references/
 │   └── structure.md                   # Documentación detallada
 └── assets/
@@ -85,6 +88,7 @@ python scripts/create_daily_prd.py [--date 2026-02-16] [--output ./path]
 
 #### Generar Reporte de Horas
 
+
 **Python:**
 ```bash
 python scripts/generate_hours_report.py PRD_260216.md [--output ./reports]
@@ -101,7 +105,26 @@ Genera automáticamente `HORAS_PRD_YYYYMMDD.md` con:
 - Total de horas trabajadas
 - Promedio por tarea
 
-## 📋 Estructura del PRD Diario
+#### Generar Dashboard Visual HTML
+
+**Python:**
+```bash
+python scripts/generate_dashboard.py PRD_260216.md [--output ./dashboards]
+```
+
+**PowerShell:**
+```powershell
+.\scripts\generate_dashboard.ps1 -PRDFile "PRD_260216.md" [-Output "./dashboards"]
+```
+
+Genera automáticamente `PRD_YYYYMMDD_DASHBOARD.html` con:
+- Estadísticas en tiempo real (tareas, horas, progreso)
+- Barra de progreso visual
+- Cards por cada tarea completada/pendiente
+- Toggle theme light/dark
+- Diseño responsive (funciona en móvil)
+- Archivo HTML standalone (sin dependencias externas)
+- Abre directamente en navegador
 
 ### Formato Jerárquico (Nuevo)
 
@@ -198,15 +221,23 @@ Este skill puede trabajar junto con:
 3. **Documenta bien** - Explica QUÉ se hizo, POR QUÉ y RESULTADO obtenido
 4. **Marca pendientes** - Al final del día, lista lo incompleto
 5. **Genera reporte de horas** - Al cierre del día, corre el script de horas
-6. **Revisa completitud** - Antes de terminar, valida toda la información
+6. **Visualiza en dashboard** - Abre el HTML en navegador para ver progreso visual
+7. **Revisa completitud** - Antes de terminar, valida toda la información
 
 ## 📖 Documentación
 
-- [SKILL.md](SKILL.md) - Documentación principal del skill (4 fases de trabajo)
+- [SKILL.md](SKILL.md) - Documentación principal del skill (5 fases de trabajo)
 - [references/structure.md](references/structure.md) - Detalles técnicos y mejores prácticas
 - [assets/template.md](assets/template.md) - Plantilla lista para usar
 
 ## 📝 Historial de Cambios
+
+### v1.2 (2026-02-16)
+- ✅ Dashboard HTML visual e interactivo (Python + PowerShell)
+- ✅ Estadísticas en tiempo real con gráficos
+- ✅ Theme toggle (light/dark mode con localStorage)
+- ✅ Diseño responsive para móvil
+- ✅ Fase 5: Visualización en dashboard
 
 ### v1.1 (2026-02-16)
 - ✅ Nuevo formato jerárquico (### ✅ N. Task — **HH:MM**)
@@ -217,6 +248,7 @@ Este skill puede trabajar junto con:
 ### v1.0 (2026-02-16)
 - Versión inicial con creación de PRDs
 - Scripts Python y PowerShell
+- Fase 1-3: Crear, registrar tareas, gestionar pendientes
 
 ## 📄 Licencia
 

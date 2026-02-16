@@ -97,7 +97,27 @@ Genera automáticamente `HORAS_PRD_260216.md` con:
 - Promedio por tarea
 - Timestamp de generación
 
-## Estructura Recomendada del PRD Diario
+### Fase 5: Visualizar en Dashboard HTML (Nuevo)
+
+Para ver un dashboard visual e interactivo del PRD:
+
+**Python:**
+```bash
+python scripts/generate_dashboard.py PRD_260216.md
+```
+
+**PowerShell:**
+```powershell
+.\scripts\generate_dashboard.ps1 -PRDFile "PRD_260216.md"
+```
+
+Genera automáticamente `PRD_260216_DASHBOARD.html` con:
+- Estadísticas de tareas completadas/pendientes
+- Tasa de completación con barra de progreso
+- Cards interactivos por cada tarea
+- Tema claro/oscuro con toggle
+- Diseño responsive (mobile-friendly)
+- Standalone HTML (sin dependencias externas)
 
 Ver [structure.md](references/structure.md) para detalles completos.
 
