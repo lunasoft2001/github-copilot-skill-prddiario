@@ -41,8 +41,8 @@ def parse_prd_markdown(content):
                     key, value = match.groups()
                     data['summary'][key.strip()] = value.strip()
     
-    # Extract completed tasks
-    completed_pattern = r'### ✅ (\d+)\.\s+(.+?)\s+—\s+\*\*(\d{2}:\d{2})\*\*\n\n\*\*Descripción\*\*\s+\n(.+?)\n\n\*\*Solución\*\*\s+\n(.+?)(?=\n\n###|$)'
+    # Extract completed tasks - more flexible pattern
+    completed_pattern = r'###\s+.+?\s+(\d+)\.\s+(.+?)\s+(?:—|--)\s+\*\*(\d{2}:\d{2})\*\*\n+\*\*Descripción\*\*\s*\n\n?(.+?)\n+\*\*Solución\*\*\s*\n\n?(.+?)(?=\n---\n###|\n\n###|$)'
     for match in re.finditer(completed_pattern, content, re.DOTALL):
         task_num, task_name, time_str, desc, solution = match.groups()
         data['completed_tasks'].append({
@@ -53,8 +53,8 @@ def parse_prd_markdown(content):
             'solution': solution.strip()
         })
     
-    # Extract pending tasks
-    pending_pattern = r'### ⏳ (\d+)\.\s+(.+?)\s+—\s+\*\*(\d{2}:\d{2})\*\*\n\n\*\*Descripción\*\*\s+\n(.+?)\n\n\*\*Estado\*\*\s+\n(.+?)(?=\n\n###|$)'
+    # Extract pending tasks - more flexible pattern
+    pending_pattern = r'###\s+.+?\s+(\d+)\.\s+(.+?)\s+(?:—|--)\s+\*\*(\d{2}:\d{2})\*\*\n+\*\*Descripción\*\*\s*\n\n?(.+?)\n+\*\*Estado\*\*\s*\n\n?(.+?)(?=\n---\n###|\n\n###|$)'
     for match in re.finditer(pending_pattern, content, re.DOTALL):
         task_num, task_name, time_str, desc, status = match.groups()
         data['pending_tasks'].append({

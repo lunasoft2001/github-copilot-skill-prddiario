@@ -51,8 +51,8 @@ function Parse-PRD {
         }
     }
     
-    # Extract completed tasks
-    $completedPattern = '### ✅ (\d+)\.\s+(.+?)\s+—\s+\*\*(\d{2}:\d{2})\*\*\n\n\*\*Descripción\*\*\s+\n(.+?)\n\n\*\*Solución\*\*\s+\n(.+?)(?=\n\n###|$)'
+    # Extract completed tasks - more flexible pattern
+    $completedPattern = '###\s+.+?\s+(\d+)\.\s+(.+?)\s+(?:—|--)\s+\*\*(\d{2}:\d{2})\*\*\n+\*\*Descripción\*\*\s*\n\n?(.+?)\n+\*\*Solución\*\*\s*\n\n?(.+?)(?=\n---\n###|\n\n###|$)'
     $matches = [regex]::Matches($Content, $completedPattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
     
     foreach ($match in $matches) {
@@ -65,8 +65,8 @@ function Parse-PRD {
         }
     }
     
-    # Extract pending tasks
-    $pendingPattern = '### ⏳ (\d+)\.\s+(.+?)\s+—\s+\*\*(\d{2}:\d{2})\*\*\n\n\*\*Descripción\*\*\s+\n(.+?)\n\n\*\*Estado\*\*\s+\n(.+?)(?=\n\n###|$)'
+    # Extract pending tasks - more flexible pattern
+    $pendingPattern = '###\s+.+?\s+(\d+)\.\s+(.+?)\s+(?:—|--)\s+\*\*(\d{2}:\d{2})\*\*\n+\*\*Descripción\*\*\s*\n\n?(.+?)\n+\*\*Estado\*\*\s*\n\n?(.+?)(?=\n---\n###|\n\n###|$)'
     $matches = [regex]::Matches($Content, $pendingPattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
     
     foreach ($match in $matches) {
