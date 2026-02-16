@@ -16,7 +16,7 @@ Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados
 
 ```
 prd-diario/
-├── SKILL.md                            # Documentación principal (5 fases)
+├── SKILL.md                            # Documentación principal (4 fases)
 ├── config.json                         # Configuración centralizada
 ├── scripts/
 │   ├── create_daily_prd.py            # Crea nuevo PRD_YYYYMMDD.md
