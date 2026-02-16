@@ -1,6 +1,6 @@
 ---
 name: prd-diario
-description: 'Gestiona tareas diarias creando PRDs estructurados con tabla de tareas realizadas, pendientes y soluciones. Integra el skill PRD para generación profesional. Usa cuando necesites crear o actualizar un PRD diario, registrar tareas completadas con horas y descripciones, o planificar tareas pendientes para el día siguiente.'
+description: 'Gestiona tareas diarias con formato jerárquico legible, documentación completa (descripción + solución) con timestamps, y genera reportes automáticos de horas trabajadas. Usa cuando necesites crear PRD diario, registrar tareas completadas, gestionar pendientes, o generar reportes de horas. Incluye scripts Python/PowerShell para automatizar todo.'
 license: MIT
 ---
 
@@ -8,12 +8,13 @@ license: MIT
 
 ## Descripción General
 
-Automatiza la creación y actualización de Documentos de Requisitos de Productos (PRD) diarios para un seguimiento estructurado de tareas. Ideal para equipos que necesitan:
+Automatiza la creación y actualización de Documentos de Requisitos de Productos (PRD) diarios para un seguimiento estructurado de tareas. Ideal para:
 
-- Registro automático de tareas realizadas con timestamps
-- Seguimiento de soluciones implementadas
+- Registro de tareas realizadas con timestamps exactos
+- Documentación detallada de descripción y soluciones implementadas
 - Gestión de tareas pendientes para el día siguiente
-- Documento centralizado para auditoría y reportes
+- Generación automática de reportes de horas trabajadas
+- Auditoría y reportes diarios a stakeholders
 
 ## Cuándo Usar Este Skill
 
@@ -22,9 +23,9 @@ Use este skill cuando:
 - Necesite crear un PRD nuevo para un día específico
 - Quiera registrar tareas completadas con hora exacta
 - Deba documentar soluciones de manera estructurada
-- Tenga tareas pendientes que requieran seguimiento al día siguiente
-- Necesite exportar o reportar actividades diarias a stakeholders
-- El usuario pida "crear PRD diario", "registrar tareas de hoy", o "agregar tarea completada"
+- Tenga tareas pendientes que requieran seguimiento
+- Necesite generar reportes de horas trabajadas al final del día
+- El usuario pida "crear PRD diario", "registrar tarea completada", o "generar reporte de horas"
 
 ## Flujo de Trabajo
 
@@ -32,45 +33,69 @@ Use este skill cuando:
 
 Cuando sea la primera vez en el día:
 
-1. **Verificar archivo existente**: Busca `PRD_YYYYMMDD.md` en la carpeta del proyecto
+1. **Verificar archivo existente**: Busca `PRD_YYYYMMDD.md` en carpeta del proyecto
 2. **Si existe**: Continúa a Fase 2
-3. **Si no existe**: Crea nuevo PRD usando la plantilla de `assets/template.md`
+3. **Si no existe**: Crea nuevo PRD usando `scripts/create_daily_prd.py` o `create_daily_prd.ps1`
 
 ### Fase 2: Registrar Tareas Realizadas
 
 Para cada tarea completada:
 
-1. **Obtener hora actual**: Usa `$(Get-Date -Format 'HH:mm')` en PowerShell
-2. **Agregar fila a tabla**: Inserta en "Tareas Realizadas"
-3. **Estructura de fila**: `| # | Nombre Tarea | Descripción Detallada | Solución/Resultado | Hora |`
-4. **Descripción**: Incluye contexto, problema encontrado, origen de la solicitud
-5. **Solución**: Explica qué se hizo, por qué, y resultado logrado
+```markdown
+### ✅ N. Nombre de la Tarea — **HH:MM**
+
+**Descripción**  
+Contexto y motivo de la tarea. Qué problema se resolvía, de dónde venía la solicitud.
+
+**Solución**  
+Qué se hizo y cómo se resolvió. Pasos tomados, tecnologías usadas, resultado final.
+```
+
+**Ejemplo:**
+
+```markdown
+### ✅ 1. Revisar tareas asignadas en Trello — **09:00**
+
+**Descripción**  
+Morning standup: Revisión de tareas pendientes del sprint. Se identificaron 12 tareas en el backlog y 3 en progreso.
+
+**Solución**  
+Se revisaron prioridades con el equipo. Se replanificó una tarea de baja prioridad. Se inició trabajo en tarea crítica de cliente.
+```
 
 ### Fase 3: Gestionar Tareas Pendientes
 
 Para tareas incompletas:
 
-1. **Crear sección "Tareas Pendientes"** (si aún no existe)
-2. **Listar cada tarea pendiente** con contexto
-3. **Al final del día**: Si hay tareas pendientes, generar PRD para mañana
+```markdown
+### ⏳ X. Nombre de Tarea Pendiente — **HH:MM**
 
-### Fase 4: Crear PRD de Mañana (si aplica)
+**Descripción**  
+Contexto de la tarea pendiente...
 
-Si hay tareas pendientes:
+**Estado**  
+En curso / Bloqueado / En espera
+```
 
-1. **Crear archivo**: `PRD_YYYYMMDD_MAÑANA.md` (donde YYYYMMDD es el día siguiente)
-2. **Usar estructura**:
-   ```
-   # PRD - [FECHA MAÑANA]
-   
-   ## Tareas Pendientes del Día Anterior
-   
-   [Copiar tareas de la sección Pendientes]
-   
-   ## Propias del Día
-   
-   [Espacio para nuevas tareas]
-   ```
+### Fase 4: Generar Reportes de Horas
+
+Al final del día, para generar un reporte automático:
+
+**Python:**
+```bash
+python scripts/generate_hours_report.py PRD_260216.md
+```
+
+**PowerShell:**
+```powershell
+.\scripts\generate_hours_report.ps1 -PRDFile "PRD_260216.md"
+```
+
+Genera automáticamente `HORAS_PRD_260216.md` con:
+- Desglose por tarea con duración
+- Horas totales trabajadas
+- Promedio por tarea
+- Timestamp de generación
 
 ## Estructura Recomendada del PRD Diario
 
@@ -82,21 +107,42 @@ Ver [structure.md](references/structure.md) para detalles completos.
 # PRD - DD de MMMM de YYYY
 
 ## Resumen Ejecutivo
-Documento de registro de tareas realizadas con descripciones, soluciones y horas.
+
+- **Fecha**: DD de MMMM de YYYY
+- **Tareas completadas**: N
+- **Tareas pendientes**: M
+- **Total de horas**: Xh YYm
 
 ## Tareas Realizadas
 
-| # | Tarea | Descripción | Solución | Hora |
-|---|-------|-------------|----------|------|
-| 1 | ... | ... | ... | HH:MM |
+### ✅ 1. Primera Tarea — **09:00**
+
+**Descripción**  
+...
+
+**Solución**  
+...
+
+### ✅ 2. Segunda Tarea — **10:30**
+
+**Descripción**  
+...
+
+**Solución**  
+...
 
 ## Tareas Pendientes
 
-| # | Tarea | Descripción | Estado |
-|---|-------|-------------|--------|
-| X | ... | ... | En curso / Bloqueado / En espera |
+### ⏳ 1. Tarea Pendiente — **16:00**
+
+**Descripción**  
+...
+
+**Estado**  
+En curso
 
 ## Notas Adicionales
+
 - Observaciones importantes
 ```
 
@@ -106,70 +152,111 @@ Documento de registro de tareas realizadas con descripciones, soluciones y horas
 
 ```
 Usuario: "Vamos a crear el PRD de hoy"
-Claude: 
-1. Obtiene fecha actual
-2. Verifica si existe PRD_YYYYMMDD.md
-3. Si no existe, crea usando template.md
+Claude:
+1. Obtiene fecha actual (ej: 16 de febrero de 2026)
+2. Verifica si existe PRD_260216.md
+3. Si no existe, crea usando scripts/create_daily_prd.py
 4. Abre el archivo para edición
 ```
 
-### Agregar Tarea Completada
+### Registrar Tarea Completada
 
 ```
-Usuario: "Agregué completado: Revisar emails, tomó 30 min, completado a las 10:30"
+Usuario: "Completé: Revisar correos. Tomó 45 minutos. Fueron 23 correos nuevos, respondí prioritarios."
 Claude:
-1. Calcula la fila: # = siguiente número
-2. Obtiene hora = "10:30"
-3. Genera fila con estructura completa
-4. Inserta en tabla de Tareas Realizadas
-5. Actualiza PRD en archivo
+1. Obtiene hora actual: 10:30
+2. Calcula número: siguiente número disponible
+3. Agrega sección con formato jerárquico:
+   ### ✅ N. Revisar correos — **10:30**
+   **Descripción**  
+   Revisión diaria de correos...
+   **Solución**  
+   Se procesaron 23 correos nuevos...
+4. Actualiza PRD en archivo
 ```
 
-### Registrar Tarea Pendiente
+### Generar Reporte de Horas
 
 ```
-Usuario: "Tenemos una tarea pendiente: Revisar servidor Proxmox"
+Usuario: "Genera el reporte de horas de hoy"
 Claude:
-1. Agrega a sección Tareas Pendientes
-2. Marca estado (En curso / Bloqueado / En espera)
-3. Documenta contexto
+1. Ejecuta: python scripts/generate_hours_report.py PRD_260216.md
+2. Lee todas las tareas y timestamps del PRD
+3. Calcula duración entre tareas
+4. Genera HORAS_PRD_260216.md con totales
+5. Confirma generación exitosa
 ```
-
-## Integración con Skill PRD
-
-Cuando el usuario solicite documentación más formal o análisis de requisitos complejos para una tarea diaria:
-
-1. Usa el **skill PRD** para crear análisis profesional
-2. Embebe los PRDs generados en el PRD Diario como referencias
-3. Ejemplo: Si una tarea diaria es "Definir requisitos para nuevo módulo", usa PRD skill para análisis completo y resume en PRD diario
 
 ## Características Clave
 
-✅ **Timestamps automáticos** - Registra hora exacta de cada tarea  
-✅ **Estructura consistente** - Tabla Markdown reutilizable diariamente  
-✅ **Rastreabilidad** - Cada tarea con descripción y solución  
-✅ **Escalable** - Extensible para reportes y auditoría  
+✅ **Formato Jerárquico** - Estructura clara con encabezados H3 y emojis  
+✅ **Timestamps Exactos** - Registra hora de inicio de cada tarea  
+✅ **Documentación Completa** - Descripción + Solución para auditoría  
+✅ **Reportes Automáticos** - Scripts Python/PowerShell generan horas  
+✅ **Gestión de Pendientes** - Seguimiento de tareas en progreso  
 ✅ **Git-friendly** - Markdown puro, fácil de versionear  
-✅ **PRDs encadenados** - Soporte para tareas que se arrastran a días siguientes
+✅ **Rastreabilidad Completa** - Auditoría diaria con toda la información
 
 ## Ejemplos de Registros Reales
 
 ### Tarea Simple (Bug Fix)
 
-```
-| 2 | Corregir validación en formulario | Usuario reportó error en validación de email en formulario de contacto. Error: validación rechazaba emails válidos con subdominios | Se identificó regex incorrecto en campo email. Se actualizó patrón de validación a RFC 5322. Testeado con 50 casos. Desplegado en producción. | 11:15 |
+```markdown
+### ✅ 2. Corregir validación en formulario — **11:15**
+
+**Descripción**  
+Usuario reportó error en validación de email en formulario de contacto. La validación rechazaba emails válidos con subdominios. Impacta signup de nuevos usuarios.
+
+**Solución**  
+Se identificó regex incorrecto en campo email (patrón muy restrictivo). Se actualizó patrón de validación a RFC 5322. Se testeó con 50 casos de prueba. Desplegado en producción. Validado con clientes específicos.
 ```
 
 ### Tarea Compleja (Integración)
 
-```
-| 5 | Integración con API de pagos | Cliente solicita añadir nuevo proveedor de pagos (Stripe). Requerido conectar a sistema actual, modificar flujo de checkout y actualizar documentación | Se implementó cliente Stripe, se integraron webhooks para confirmación de pago, se actualizó checkout para soportar múltiples proveedores. Testing completado. Demo realizado con cliente. | 14:45 |
+```markdown
+### ✅ 5. Integración con API de Stripe — **14:45**
+
+**Descripción**  
+Cliente solicita añadir nuevo proveedor de pagos (Stripe) al sistema. Requerido conectar a sistema actual, modificar flujo de checkout y actualizar documentación. Esta es actividad crítica para Q1.
+
+**Solución**  
+Se implementó cliente Stripe official. Se integraron webhooks para confirmación de pago y reembolsos. Se actualizó checkout para soportar múltiples proveedores (Stripe + PayPal). Testing completado con casos de éxito y error. Demo realizado con cliente. Documentación actualizada.
 ```
 
-### Tarea Administrativa
+## Scripts Disponibles
 
+### create_daily_prd.py
+
+Crea un nuevo archivo PRD_YYYYMMDD.md con estructura base.
+
+```bash
+python scripts/create_daily_prd.py [--date 2026-02-16] [--output ./path]
 ```
-| 7 | Preparación de backup de servidor | Mantenimiento preventivo del servidor principal. Requerido backup completo antes de actualización de SO | Se ejecutó backup completo (2.3TB). Se validó integridad. Se documentó procedimiento de restauración. Almacenado en servidor de backup externo. | 16:30 |
+
+### create_daily_prd.ps1
+
+Versión PowerShell de creación de PRD.
+
+```powershell
+.\scripts\create_daily_prd.ps1 -Date "2026-02-16" -Output "./path"
+```
+
+### generate_hours_report.py
+
+Analiza un PRD y genera reporte de horas trabajadas.
+
+```bash
+python scripts/generate_hours_report.py PRD_260216.md [--output ./reports]
+```
+
+**Output:** `HORAS_PRD_260216.md` con desglose detallado
+
+### generate_hours_report.ps1
+
+Versión PowerShell de generación de reportes.
+
+```powershell
+.\scripts\generate_hours_report.ps1 -PRDFile "PRD_260216.md" -Output "./reports"
 ```
 
 ## Checklist de Completitud
@@ -179,13 +266,17 @@ Antes de terminar el día, verifica:
 - [ ] ¿Todas las tareas realizadas tienen descripción clara?
 - [ ] ¿Cada solución explica QUÉ se hizo y POR QUÉ?
 - [ ] ¿Hay timestamps para cada tarea?
-- [ ] ¿Las tareas pendientes están claramente listadas?
-- [ ] ¿Si hay pendientes, se creó PRD para mañana?
-- [ ] ¿El archivo está guardado en la carpeta correcta?
-- [ ] ¿El nombre sigue formato PRD_YYYYMMDD.md?
+- [ ] ¿Las tareas pendientes están claramente documentadas?
+- [ ] ¿El archivo está guardado con nombre PRD_YYYYMMDD.md?
+- [ ] ¿Has generado el reporte de horas? (python/powershell script)
+- [ ] ¿Validaste que los totales de horas son correctos?
 
 ## Referencias
 
-- [Estructura Detallada](references/structure.md) - Detalles técnicos de cada sección
+- [Estructura Detallada](references/structure.md) - Detalles técnicos completos
 - [Plantilla](assets/template.md) - Plantilla lista para usar
 - [Skill PRD](../prd/SKILL.md) - Para análisis profesionales profundos
+
+## Licencia
+
+MIT License - Libre para usar y modificar
