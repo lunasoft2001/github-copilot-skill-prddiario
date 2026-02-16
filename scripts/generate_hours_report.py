@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Daily Hours Report Generator
 Genera un reporte de horas trabajadas a partir de un PRD diario.
@@ -12,9 +12,25 @@ Ejemplos:
 """
 
 import argparse
+import os
+import json
 import re
 from pathlib import Path
 from datetime import datetime, time
+
+# Load configuration
+CONFIG_FILE = Path(__file__).parent.parent / "config.json"
+DEFAULT_OUTPUT_DIR = None
+
+if CONFIG_FILE.exists():
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            default_output = config.get("prd_output_directory", None)
+            if default_output:
+                DEFAULT_OUTPUT_DIR = os.path.expanduser(default_output)
+    except Exception:
+        pass
 
 def parse_time(time_str):
     """Parse time string in HH:MM format to time object."""
@@ -42,8 +58,7 @@ def extract_tasks_from_prd(prd_content):
     """Extract tasks and times from PRD content."""
     tasks = []
     
-    # PatrÃ³n mÃ¡s flexible: ### [carÃ¡cter] N. DescripciÃ³n **HH:MM**
-    # No depende del carÃ¡cter exacto de separaciÃ³n
+    # Pattern: ### [character] N. Description **HH:MM**
     pattern = r'###\s+.+?\s+(\d+)\.\s+(.+?)\s+\*\*(\d{2}:\d{2})\*\*'
     
     matches = re.finditer(pattern, prd_content, re.DOTALL)
@@ -66,6 +81,10 @@ def extract_tasks_from_prd(prd_content):
 def generate_report(prd_file, output_dir=None):
     """Generate hours report from PRD file."""
     
+    # Use default output dir if not specified
+    if output_dir is None:
+        output_dir = DEFAULT_OUTPUT_DIR
+    
     # Read PRD file
     prd_path = Path(prd_file)
     if not prd_path.exists():
@@ -77,7 +96,7 @@ def generate_report(prd_file, output_dir=None):
     # Extract date from PRD
     date_match = re.search(r'# PRD - (\d{1,2} de \w+ de \d{4})', prd_content)
     if not date_match:
-        return None, "No se encontrÃ³ la fecha en el PRD"
+        return None, "No se encontró la fecha en el PRD"
     
     date_str = date_match.group(1)
     
@@ -112,7 +131,7 @@ def generate_report(prd_file, output_dir=None):
         })
     
     # Generate report content
-    report_content = f"""# Reporte de Horas â€” {date_str}
+    report_content = f"""# Reporte de Horas – {date_str}
 
 ## Resumen
 
@@ -128,7 +147,7 @@ def generate_report(prd_file, output_dir=None):
     for task in task_durations:
         report_content += f"### {task['number']}. {task['name']}\n"
         report_content += f"- **Hora inicio**: {task['time']}\n"
-        report_content += f"- **DuraciÃ³n**: {task['duration_str']}\n\n"
+        report_content += f"- **Duración**: {task['duration_str']}\n\n"
     
     report_content += "---\n\n"
     report_content += f"## Totales\n\n"
@@ -138,7 +157,7 @@ def generate_report(prd_file, output_dir=None):
     
     # Determine output file
     if output_dir:
-        output_path = Path(output_dir)
+        output_path = Path(output_dir).expanduser()
         output_path.mkdir(parents=True, exist_ok=True)
         report_file = output_path / f"HORAS_{prd_path.stem}.md"
     else:
@@ -163,20 +182,19 @@ Ejemplos:
         """
     )
     parser.add_argument('prd_file', help='Archivo PRD a analizar')
-    parser.add_argument('--output', help='Directorio de salida para el reporte')
+    parser.add_argument('--output', help=f'Directorio de salida para el reporte (default: {DEFAULT_OUTPUT_DIR or "mismo dir del PRD"})')
     
     args = parser.parse_args()
     
     report_file, message = generate_report(args.prd_file, args.output)
     
     if report_file:
-        print(f"âœ… {message}")
+        print(f"✅ {message}")
         print(f"   Archivo: {report_file}")
         return 0
     else:
-        print(f"âŒ Error: {message}")
+        print(f"❌ {message}")
         return 1
 
 if __name__ == "__main__":
     exit(main())
-

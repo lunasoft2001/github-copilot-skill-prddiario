@@ -12,8 +12,23 @@ Genera: PRD_260216_DASHBOARD.html (auto-abre en navegador)
 import argparse
 import re
 import json
+import os
 from pathlib import Path
 from datetime import datetime
+
+# Load configuration
+CONFIG_FILE = Path(__file__).parent.parent / "config.json"
+DEFAULT_OUTPUT_DIR = None
+
+if CONFIG_FILE.exists():
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            default_output = config.get("prd_output_directory", None)
+            if default_output:
+                DEFAULT_OUTPUT_DIR = os.path.expanduser(default_output)
+    except Exception:
+        pass
 
 def parse_prd_markdown(content):
     """Parse PRD markdown content to extract structured data."""
@@ -496,7 +511,7 @@ def main():
         description="Generar dashboard HTML desde PRD Markdown"
     )
     parser.add_argument('prd_file', help='Archivo PRD a convertir')
-    parser.add_argument('--output', help='Directorio de salida')
+    parser.add_argument('--output', default=None, help=f'Directorio de salida (default: {DEFAULT_OUTPUT_DIR or "mismo dir del PRD"})')
     
     args = parser.parse_args()
     
@@ -514,7 +529,11 @@ def main():
     
     # Determine output file
     if args.output:
-        output_path = Path(args.output)
+        output_path = Path(args.output).expanduser()
+        output_path.mkdir(parents=True, exist_ok=True)
+        dashboard_file = output_path / f"{prd_path.stem}_DASHBOARD.html"
+    elif DEFAULT_OUTPUT_DIR:
+        output_path = Path(DEFAULT_OUTPUT_DIR).expanduser()
         output_path.mkdir(parents=True, exist_ok=True)
         dashboard_file = output_path / f"{prd_path.stem}_DASHBOARD.html"
     else:

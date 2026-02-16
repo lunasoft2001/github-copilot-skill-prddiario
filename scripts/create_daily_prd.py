@@ -14,8 +14,21 @@ Ejemplos:
 
 import argparse
 import os
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
+
+# Load configuration
+CONFIG_FILE = Path(__file__).parent.parent / "config.json"
+DEFAULT_OUTPUT_DIR = "."
+
+if CONFIG_FILE.exists():
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            DEFAULT_OUTPUT_DIR = os.path.expanduser(config.get("prd_output_directory", "."))
+    except Exception:
+        pass
 
 TEMPLATE = """# PRD - {date_spanish}
 
@@ -77,17 +90,20 @@ def format_spanish_date(date_obj):
     return f"{day} de {month} de {year}"
 
 
-def create_prd(date_str=None, path="."):
+def create_prd(date_str=None, path=None):
     """
     Create a new daily PRD file.
     
     Args:
         date_str: Date in YYYYMMDD format. If None, uses today's date.
-        path: Directory where PRD should be created.
+        path: Directory where PRD should be created. If None, uses config default.
     
     Returns:
-        tuple: (filename, filepath, success: bool)
+        tuple: (filename, filepath, success: bool, message: str)
     """
+    if path is None:
+        path = DEFAULT_OUTPUT_DIR
+    
     # Determine date
     if date_str is None:
         date_obj = datetime.now()
@@ -95,7 +111,7 @@ def create_prd(date_str=None, path="."):
         date_obj = parse_date(date_str)
     
     # Create directory if it doesn't exist
-    output_dir = Path(path)
+    output_dir = Path(path).expanduser()
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Generate filename
@@ -126,13 +142,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python create_daily_prd.py                    # Crea PRD para hoy
+  python create_daily_prd.py                    # Crea PRD para hoy (en carpeta configurada)
   python create_daily_prd.py --date 20260217   # Crea para fecha específica
   python create_daily_prd.py --path ./My/Path  # Especifica carpeta de salida
         """
     )
     parser.add_argument('--date', help='Fecha en formato YYYYMMDD (default: hoy)')
-    parser.add_argument('--path', default='.', help='Ruta de salida (default: directorio actual)')
+    parser.add_argument('--path', default=None, help=f'Ruta de salida (default: {DEFAULT_OUTPUT_DIR})')
     
     args = parser.parse_args()
     

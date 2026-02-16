@@ -1,0 +1,5 @@
+{
+  "prd_output_directory": "~/Documents/prd_diarios",
+  "description": "Configuración por defecto para el skill prd-diario",
+  "notes": "Puedes sobrescribir estos valores usando los argumentos --path o --output en los scripts"
+}
