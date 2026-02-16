@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
     Daily Hours Report Generator
@@ -66,9 +66,11 @@ function Extract-Tasks {
     param([string]$Content)
     
     $tasks = @()
-    $pattern = '###\s+[✅⏳]\s+(\d+)\.\s+([^—]+)—\s+\*\*(\d{2}:\d{2})\*\*'
+    # PatrÃ³n efectivo: ### [algo] N. DescripciÃ³n â€” **HH:MM**
+    # Busca: lÃ­nea con ###, nÃºmero, punto, descripciÃ³n, y hora en formato HH:MM
+    $pattern = '###\s+.+?\s+(\d+)\.\s+(.+?)\s+\*\*(\d{2}:\d{2})\*\*'
     
-    $matches = [regex]::Matches($Content, $pattern)
+    $matches = [regex]::Matches($Content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
     
     foreach ($match in $matches) {
         $taskNum = $match.Groups[1].Value
@@ -108,7 +110,7 @@ function Generate-Report {
         $dateStr = $matches[1]
     }
     else {
-        return $null, "No se encontró la fecha en el PRD"
+        return $null, "No se encontrÃ³ la fecha en el PRD"
     }
     
     # Extraer tareas
@@ -127,14 +129,14 @@ function Generate-Report {
         $durationMins = $null
         
         if ($i -lt $tasks.Count - 1) {
-            # Duración = hora de próxima tarea - hora actual
+            # DuraciÃ³n = hora de prÃ³xima tarea - hora actual
             $startTime = $task.Time
             $endTime = $tasks[$i + 1].Time
             $durationMins = Calculate-Duration -StartTime $startTime -EndTime $endTime
             $totalMinutes += $durationMins
         }
         else {
-            # Para la última tarea, asumir 1 hora
+            # Para la Ãºltima tarea, asumir 1 hora
             $durationMins = 60
             $totalMinutes += $durationMins
         }
@@ -163,7 +165,7 @@ function Generate-Report {
     $totalHoursDecimal = [math]::Round($totalMinutes / 60, 2)
     
     $reportContent = @"
-# Reporte de Horas — $dateStr
+# Reporte de Horas â€” $dateStr
 
 ## Resumen
 
@@ -180,7 +182,7 @@ function Generate-Report {
         $reportContent += @"
 ### $($task.Number). $($task.Name)
 - **Hora inicio**: $($task.Time)
-- **Duración**: $($task.DurationStr)
+- **DuraciÃ³n**: $($task.DurationStr)
 
 "@
     }
@@ -222,15 +224,16 @@ function Generate-Report {
     }
 }
 
-# Ejecutar generación
+# Ejecutar generaciÃ³n
 $reportFile, $message = Generate-Report -PRDFile $PRDFile -OutputDir $Output
 
 if ($reportFile) {
-    Write-Host "✅ $message" -ForegroundColor Green
+    Write-Host "âœ… $message" -ForegroundColor Green
     Write-Host "   Archivo: $reportFile"
     exit 0
 }
 else {
-    Write-Host "❌ Error: $message" -ForegroundColor Red
+    Write-Host "âŒ Error: $message" -ForegroundColor Red
     exit 1
 }
+

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Daily Hours Report Generator
 Genera un reporte de horas trabajadas a partir de un PRD diario.
@@ -42,10 +42,11 @@ def extract_tasks_from_prd(prd_content):
     """Extract tasks and times from PRD content."""
     tasks = []
     
-    # Find all task headers: ### ✅ N. Task Name — **HH:MM**
-    pattern = r'###\s+[✅⏳]\s+(\d+)\.\s+([^—]+)—\s+\*\*(\d{2}:\d{2})\*\*'
+    # PatrÃ³n mÃ¡s flexible: ### [carÃ¡cter] N. DescripciÃ³n **HH:MM**
+    # No depende del carÃ¡cter exacto de separaciÃ³n
+    pattern = r'###\s+.+?\s+(\d+)\.\s+(.+?)\s+\*\*(\d{2}:\d{2})\*\*'
     
-    matches = re.finditer(pattern, prd_content)
+    matches = re.finditer(pattern, prd_content, re.DOTALL)
     for match in matches:
         task_num = match.group(1)
         task_name = match.group(2).strip()
@@ -76,7 +77,7 @@ def generate_report(prd_file, output_dir=None):
     # Extract date from PRD
     date_match = re.search(r'# PRD - (\d{1,2} de \w+ de \d{4})', prd_content)
     if not date_match:
-        return None, "No se encontró la fecha en el PRD"
+        return None, "No se encontrÃ³ la fecha en el PRD"
     
     date_str = date_match.group(1)
     
@@ -111,7 +112,7 @@ def generate_report(prd_file, output_dir=None):
         })
     
     # Generate report content
-    report_content = f"""# Reporte de Horas — {date_str}
+    report_content = f"""# Reporte de Horas â€” {date_str}
 
 ## Resumen
 
@@ -127,7 +128,7 @@ def generate_report(prd_file, output_dir=None):
     for task in task_durations:
         report_content += f"### {task['number']}. {task['name']}\n"
         report_content += f"- **Hora inicio**: {task['time']}\n"
-        report_content += f"- **Duración**: {task['duration_str']}\n\n"
+        report_content += f"- **DuraciÃ³n**: {task['duration_str']}\n\n"
     
     report_content += "---\n\n"
     report_content += f"## Totales\n\n"
@@ -169,12 +170,13 @@ Ejemplos:
     report_file, message = generate_report(args.prd_file, args.output)
     
     if report_file:
-        print(f"✅ {message}")
+        print(f"âœ… {message}")
         print(f"   Archivo: {report_file}")
         return 0
     else:
-        print(f"❌ Error: {message}")
+        print(f"âŒ Error: {message}")
         return 1
 
 if __name__ == "__main__":
     exit(main())
+
