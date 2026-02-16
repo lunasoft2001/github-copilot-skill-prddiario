@@ -113,7 +113,9 @@ python scripts/create_daily_prd.py --date 20260217
 
 **PowerShell:**
 ```powershell
-.\scripts\create_daily_prd.ps1 [-Date "2026-02-16"] [-Output "./path"]
+.\scripts\create_daily_prd.ps1
+.\scripts\create_daily_prd.ps1 -Date "2026-02-16"
+.\scripts\create_daily_prd.ps1 -Output "./mi_carpeta"
 ```
 
 #### Generar Reporte de Horas
@@ -121,7 +123,12 @@ python scripts/create_daily_prd.py --date 20260217
 
 **Python:**
 ```bash
-python scripts/generate_hours_report.py PRD_260216.md [--output ./reports]
+python scripts/generate_hours_report.py PRD_260216.md
+# → Crea: ~/Documents/prd_diarios/HORAS_PRD_260216.md
+
+# Sobrescribir carpeta de salida:
+python scripts/generate_hours_report.py PRD_260216.md --output ./reportes
+# → Crea: ./reportes/HORAS_PRD_260216.md
 ```
 
 **PowerShell:**
@@ -139,7 +146,12 @@ Genera automáticamente `HORAS_PRD_YYYYMMDD.md` con:
 
 **Python:**
 ```bash
-python scripts/generate_dashboard.py PRD_260216.md [--output ./dashboards]
+python scripts/generate_dashboard.py PRD_260216.md
+# → Crea: ~/Documents/prd_diarios/PRD_260216_DASHBOARD.html
+
+# Sobrescribir carpeta de salida:
+python scripts/generate_dashboard.py PRD_260216.md --output ./dashboards
+# → Crea: ./dashboards/PRD_260216_DASHBOARD.html
 ```
 
 **PowerShell:**
