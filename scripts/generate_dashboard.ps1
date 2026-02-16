@@ -26,7 +26,7 @@ param(
 )
 
 function Parse-PRD {
-    param([string]$Content)
+    param([string[]]$Lines)
     
     $data = @{
         date = ''
@@ -37,45 +37,98 @@ function Parse-PRD {
     }
     
     # Extract date
-    if ($Content -match '# PRD - (.+)') {
-        $data.date = $matches[1].Trim()
+    $dateMatch = $lines | Where-Object { $_.Contains('# PRD -') } | Select-Object -First 1
+    if ($dateMatch) {
+        $data.date = $dateMatch.Replace('# PRD - ', '').Trim()
     }
     
-    # Extract summary
-    if ($Content -match '## Resumen Ejecutivo\n(.*?)\n---') {
-        $summaryText = $matches[1]
-        foreach ($line in $summaryText -split "`n") {
-            if ($line -match '\*\*(.+?)\*\*:\s*(.+)') {
-                $data.summary[$matches[1].Trim()] = $matches[2].Trim()
+    # Simple task extraction - just look for lines starting with ###
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+        
+        # Must start with ###
+        if ($line.Length -lt 3 -or $line.Substring(0, 3) -ne '###') {
+            continue
+        }
+        
+        # Must contain emoji
+        if (-not ($line.Contains('✅') -or $line.Contains('⏳'))) {
+            continue
+        }
+        
+        $isCompleted = $line.Contains('✅')
+        
+        # Extract task number using simple method
+        $numMatch = $line | Select-String -Pattern '(\d+)\.'
+        if ($null -eq $numMatch) { continue }
+        $taskNum = $numMatch.Matches[0].Groups[1].Value
+        
+        # Extract name - everything after number and before em-dash or separator
+        $dashPos = $line.IndexOf('—')
+        if ($dashPos -lt 0) {
+            $dashPos = $line.IndexOf('--')
+        }
+        if ($dashPos -lt 0) { continue }
+        
+        # Find start of name (after ".")
+        $dotPos = $line.IndexOf('.')
+        if ($dotPos -lt 0) { continue }
+        $taskName = $line.Substring($dotPos + 1, $dashPos - $dotPos - 1).Trim()
+        
+        # Extract time between ** **
+        $timeMatch = $line | Select-String -Pattern '\*\*([^*]+)\*\*'
+        $taskTime = if ($null -ne $timeMatch) { $timeMatch.Matches[0].Groups[1].Value } else { '' }
+        
+        # Get description (next non-empty lines after **Description**)
+        $description = ''
+        $solution = ''
+        $status = ''
+        
+        $j = $i + 1
+        while ($j -lt $lines.Count -and -not $lines[$j].StartsWith('###')) {
+            if ($lines[$j].Contains('**Descripción**') -or $lines[$j].Contains('**Descripcion**')) {
+                $j++
+                while ($j -lt $lines.Count -and $lines[$j].Trim() -ne '' -and -not $lines[$j].Contains('**')) {
+                    $description += $lines[$j].Trim() + ' '
+                    $j++
+                }
+                $description = $description.Trim()
+            } elseif ($lines[$j].Contains('**Solución**') -or $lines[$j].Contains('**Solucion**')) {
+                $j++
+                while ($j -lt $lines.Count -and $lines[$j].Trim() -ne '' -and -not $lines[$j].Contains('**') -and -not $lines[$j].StartsWith('---')) {
+                    $solution += $lines[$j].Trim() + ' '
+                    $j++
+                }
+                $solution = $solution.Trim()
+            } elseif ($lines[$j].Contains('**Estado**')) {
+                $j++
+                while ($j -lt $lines.Count -and $lines[$j].Trim() -ne '' -and -not $lines[$j].Contains('**') -and -not $lines[$j].StartsWith('---')) {
+                    $status += $lines[$j].Trim() + ' '
+                    $j++
+                }
+                $status = $status.Trim()
+            } else {
+                $j++
             }
         }
-    }
-    
-    # Extract completed tasks - more flexible pattern
-    $completedPattern = '###\s+.+?\s+(\d+)\.\s+(.+?)\s+(?:—|--)\s+\*\*(\d{2}:\d{2})\*\*\n+\*\*Descripción\*\*\s*\n\n?(.+?)\n+\*\*Solución\*\*\s*\n\n?(.+?)(?=\n---\n###|\n\n###|$)'
-    $matches = [regex]::Matches($Content, $completedPattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    
-    foreach ($match in $matches) {
-        $data.completed_tasks += @{
-            number = $match.Groups[1].Value
-            name = $match.Groups[2].Value.Trim()
-            time = $match.Groups[3].Value
-            description = $match.Groups[4].Value.Trim()
-            solution = $match.Groups[5].Value.Trim()
-        }
-    }
-    
-    # Extract pending tasks - more flexible pattern
-    $pendingPattern = '###\s+.+?\s+(\d+)\.\s+(.+?)\s+(?:—|--)\s+\*\*(\d{2}:\d{2})\*\*\n+\*\*Descripción\*\*\s*\n\n?(.+?)\n+\*\*Estado\*\*\s*\n\n?(.+?)(?=\n---\n###|\n\n###|$)'
-    $matches = [regex]::Matches($Content, $pendingPattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    
-    foreach ($match in $matches) {
-        $data.pending_tasks += @{
-            number = $match.Groups[1].Value
-            name = $match.Groups[2].Value.Trim()
-            time = $match.Groups[3].Value
-            description = $match.Groups[4].Value.Trim()
-            status = $match.Groups[5].Value.Trim()
+        
+        # Add task
+        if ($isCompleted) {
+            $data.completed_tasks += @{
+                number = $taskNum
+                name = $taskName
+                time = $taskTime
+                description = $description
+                solution = $solution
+            }
+        } else {
+            $data.pending_tasks += @{
+                number = $taskNum
+                name = $taskName
+                time = $taskTime
+                description = $description
+                status = $status
+            }
         }
     }
     
@@ -533,8 +586,8 @@ if (-not (Test-Path $PRDFile)) {
 }
 
 # Read and parse
-$content = Get-Content -Path $PRDFile -Raw -Encoding UTF8
-$prdData = Parse-PRD -Content $content
+$lines = @(Get-Content -Path $PRDFile -Encoding UTF8)
+$prdData = Parse-PRD -Lines $lines
 $html = Generate-HTML -PRDData $prdData
 
 # Determine output
