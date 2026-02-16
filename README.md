@@ -1,29 +1,31 @@
 # PRD Diario - GitHub Copilot Skill
 
-Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados con tabla de tareas realizadas, pendientes y soluciones.
+Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados con formato jerárquico legible. Incluye generación automática de reportes de horas trabajadas.
 
 ## 🎯 Características
 
-✅ **Registro automático de tareas** - Con timestamps precisos  
-✅ **Estructura consistente** - Tabla Markdown reutilizable diariamente  
-✅ **Rastreabilidad completa** - Cada tarea con descripción y solución  
+✅ **Formato jerárquico legible** - Estructura clara con encabezados H3 y emojis  
+✅ **Timestamps precisos** - Registra hora exacta de cada tarea  
+✅ **Documentación completa** - Descripción + Solución para auditoría  
+✅ **Reportes automáticos de horas** - Scripts Python/PowerShell generan reportes diarios  
 ✅ **Gestión de pendientes** - Seguimiento de tareas incompletas  
 ✅ **Git-friendly** - Markdown puro, fácil de versionear  
-✅ **Integración PRD** - Usa el skill PRD para análisis profesionales  
-✅ **Scripts reutilizables** - Python y PowerShell para automatización  
+✅ **Scripts reutilizables** - Python y PowerShell para toda la automatización  
 
 ## 📦 Contenido
 
 ```
 prd-diario/
-├── SKILL.md                      # Documentación principal
+├── SKILL.md                            # Documentación principal
 ├── scripts/
-│   ├── create_daily_prd.py      # Script Python para crear PRDs
-│   └── create_daily_prd.ps1     # Script PowerShell para crear PRDs
+│   ├── create_daily_prd.py            # Crea nuevo PRD_YYYYMMDD.md
+│   ├── create_daily_prd.ps1           # Versión PowerShell
+│   ├── generate_hours_report.py       # Genera HORAS_PRD_YYYYMMDD.md
+│   └── generate_hours_report.ps1      # Versión PowerShell
 ├── references/
-│   └── structure.md             # Documentación detallada de estructura
+│   └── structure.md                   # Documentación detallada
 └── assets/
-    └── template.md              # Plantilla base para nuevos PRDs
+    └── template.md                    # Plantilla base
 ```
 
 ## 🚀 Instalación
@@ -40,7 +42,7 @@ cd github-copilot-skill-prddiario
 
 **Windows:**
 ```powershell
-Copy-Item -R . "$env:USERPROFILE\.copilot\skills\prd-diario" -Force
+Copy-Item -Recurse . "$env:USERPROFILE\.copilot\skills\prd-diario" -Force
 ```
 
 **macOS/Linux:**
@@ -58,64 +60,130 @@ Copiar la carpeta `github-copilot-skill-prddiario` a:
 
 ### Con Claude/GitHub Copilot
 
+Simplemente pide lo que necesites:
+
 ```
 "Crear PRD de hoy"
-"Agregué completado: Revisar emails, completado a las 10:30"
-"Tenemos una tarea pendiente: Revisar servidor Proxmox"
+"Completé: Revisar tareas en Trello, tomó 15 minutos, a las 09:00"
+"Tenemos tarea pendiente: Revisar servidor Proxmox"
+"Genera el reporte de horas de hoy"
 ```
 
 ### Scripts Directos
 
-#### Python
+#### Crear PRD Nuevo
+
+**Python:**
 ```bash
-# Crear PRD de hoy
-python scripts/create_daily_prd.py
-
-# Crear PRD para fecha específica
-python scripts/create_daily_prd.py --date 20260217
-
-# Especificar carpeta de salida
-python scripts/create_daily_prd.py --path ./PRD
+python scripts/create_daily_prd.py [--date 2026-02-16] [--output ./path]
 ```
 
-#### PowerShell
+**PowerShell:**
 ```powershell
-# Crear PRD de hoy
-.\scripts\create_daily_prd.ps1
-
-# Crear PRD para fecha específica
-.\scripts\create_daily_prd.ps1 -Date "20260217"
-
-# Especificar carpeta de salida
-.\scripts\create_daily_prd.ps1 -Path "C:\My\PRD"
+.\scripts\create_daily_prd.ps1 [-Date "2026-02-16"] [-Output "./path"]
 ```
+
+#### Generar Reporte de Horas
+
+**Python:**
+```bash
+python scripts/generate_hours_report.py PRD_260216.md [--output ./reports]
+```
+
+**PowerShell:**
+```powershell
+.\scripts\generate_hours_report.ps1 -PRDFile "PRD_260216.md" [-Output "./reports"]
+```
+
+Genera automáticamente `HORAS_PRD_YYYYMMDD.md` con:
+- Desglose de horas por tarea
+- Duración de cada tarea
+- Total de horas trabajadas
+- Promedio por tarea
 
 ## 📋 Estructura del PRD Diario
+
+### Formato Jerárquico (Nuevo)
 
 ```markdown
 # PRD - 16 de febrero de 2026
 
 ## Resumen Ejecutivo
-Documento de registro de tareas realizadas durante el día...
+
+- **Fecha**: 16 de febrero de 2026
+- **Tareas completadas**: 5
+- **Tareas pendientes**: 1
+- **Total de horas**: 4h 20m
+
+---
 
 ## Tareas Realizadas
 
-| # | Tarea | Descripción | Solución | Hora |
-|---|-------|-------------|----------|------|
-| 1 | Revisar tareas en Trello | ... | ... | 09:00 |
-| 2 | Solucionar bug Access | ... | ... | 11:15 |
+### ✅ 1. Revisar tareas en Trello — **09:00**
+
+**Descripción**  
+Morning standup: Revisión de tareas pendientes del sprint. Se identificaron 12 tareas en el backlog y 3 en progreso.
+
+**Solución**  
+Se revisaron prioridades con el equipo. Se replanificó una tarea de baja prioridad. Se inició trabajo en tarea crítica.
+
+### ✅ 2. Solucionar bug en formulario — **11:15**
+
+**Descripción**  
+Usuario reportó error en validación de email. La validación rechazaba emails válidos con subdominios.
+
+**Solución**  
+Se identificó regex incorrecto. Se actualizó patrón a RFC 5322. Se testeó con 50 casos. Desplegado en producción.
+
+---
 
 ## Tareas Pendientes
 
-| # | Tarea | Descripción | Estado |
-|---|-------|-------------|--------|
-| 3 | Apagado Proxmox | ... | En curso |
+### ⏳ 1. Apagado controlado Proxmox — **16:00**
 
-## Notas Adicionales
-- Observaciones importantes
+**Descripción**  
+Servidor principal funcionando lentamente. Requiere shutdown ordenado y análisis.
+
+**Estado**  
+En curso
 ```
 
 Ver [references/structure.md](references/structure.md) para documentación completa.
+
+## 📊 Ejemplo de Reporte de Horas
+
+Cuando ejecutas `generate_hours_report.py` en un PRD:
+
+```markdown
+# Reporte de Horas — 16 de Febrero de 2026
+
+## Resumen
+
+- **Tareas**: 8
+- **Horas totales**: 4h 20m (4.33h)
+
+---
+
+## Desglose por Tarea
+
+### 1. Revisar tareas asignadas en Trello
+- **Hora inicio**: 09:00
+- **Duración**: 15m
+
+### 2. Solucionar problema en Access
+- **Hora inicio**: 09:15
+- **Duración**: 30m
+
+[... más tareas ...]
+
+---
+
+## Totales
+
+**Horas trabajadas**: 4h 20m
+**Promedio por tarea**: 32 minutos
+**Generado**: 2026-02-16 14:35:22
+```
 
 ## 🔗 Integración con Otros Skills
 
@@ -123,65 +191,33 @@ Este skill puede trabajar junto con:
 - **Skill PRD** - Para análisis profesionales complejos incorporados en PRDs diarios
 - **Git Commit** - Para versionear PRDs diarios automáticamente
 
-## 📚 Ejemplos
-
-### Tarea Simple (Bug Fix)
-```
-| 2 | Corregir validación email | Usuario reportó error en validación. Error: regex incorrecto | Se identificó regex incorrecto. Actualizado a RFC 5322. Testeado. Desplegado. | 11:15 |
-```
-
-### Tarea Compleja (Integración)
-```
-| 5 | Integración API pagos | Cliente solicita nuevo proveedor. Requiere actualizar checkout. | Se implementó cliente Stripe, webhooks, y actualización de checkout. Testing completado. | 14:45 |
-```
-
 ## 🛠️ Mejor Práctica
 
 1. **Crea PRD cada mañana** - Usa uno de los scripts o pide a Claude
-2. **Registra tareas completadas** - Con descripción y hora
-3. **Documenta soluciones** - Explica QUÉ, POR QUÉ y RESULTADO
+2. **Registra tareas completadas** - Con descripción, solución y hora exacta
+3. **Documenta bien** - Explica QUÉ se hizo, POR QUÉ y RESULTADO obtenido
 4. **Marca pendientes** - Al final del día, lista lo incompleto
-5. **Revisa diariamente** - Antes de terminar, valida completitud
+5. **Genera reporte de horas** - Al cierre del día, corre el script de horas
+6. **Revisa completitud** - Antes de terminar, valida toda la información
 
 ## 📖 Documentación
 
-- [SKILL.md](SKILL.md) - Documentación principal del skill
+- [SKILL.md](SKILL.md) - Documentación principal del skill (4 fases de trabajo)
 - [references/structure.md](references/structure.md) - Detalles técnicos y mejores prácticas
 - [assets/template.md](assets/template.md) - Plantilla lista para usar
 
-## 🤝 Contribuciones
+## 📝 Historial de Cambios
 
-Las contribuciones son bienvenidas. Por favor:
+### v1.1 (2026-02-16)
+- ✅ Nuevo formato jerárquico (### ✅ N. Task — **HH:MM**)
+- ✅ Scripts de generación de reportes de horas (Python + PowerShell)
+- ✅ Documentación actualizada con ejemplos nuevos
+- ✅ Fase 4: Reportes automáticos de horas
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit los cambios (`git commit -m 'Add AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+### v1.0 (2026-02-16)
+- Versión inicial con creación de PRDs
+- Scripts Python y PowerShell
 
 ## 📄 Licencia
 
-Este proyecto está bajo licencia MIT. Ver [LICENSE.txt](LICENSE.txt) para detalles.
-
-## 👤 Autor
-
-Desarrollado por **Juan José Luna** (@lunasoft2001) para **Luna-Soft**
-
-## 🙋 Soporte
-
-Si tienes preguntas o problemas:
-
-1. Revisa [references/structure.md](references/structure.md)
-2. Mira ejemplos en [SKILL.md](SKILL.md)
-3. Abre un Issue en GitHub
-
-## 📅 Historial
-
-- **v1.0** (16 de febrero de 2026) - Versión inicial
-  - Skill completo con documentación
-  - Scripts Python y PowerShell
-  - Plantilla y referencias
-
----
-
-**Última actualización**: 16 de febrero de 2026
+MIT License - Libre para usar y modificar
