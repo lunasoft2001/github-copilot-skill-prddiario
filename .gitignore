@@ -1,0 +1,49 @@
+# GitHub Copilot Skill - PRD Diario
+
+Gestor de tareas diarias para GitHub Copilot con soporte para PRDs estructurados, registro de soluciones y gestión de pendientes.
+
+## Quick Links
+
+- 📖 [Documentación Completa](SKILL.md)
+- 📋 [Estructura del PRD](references/structure.md)
+- 📝 [Plantilla](assets/template.md)
+- 🐍 [Script Python](scripts/create_daily_prd.py)
+- 🔧 [Script PowerShell](scripts/create_daily_prd.ps1)
+
+## Descripción Breve
+
+Este skill permite crear y mantener PRDs diarios de forma automática con:
+- Registro de tareas realizadas con timestamps
+- Documentación de soluciones implementadas
+- Gestión de tareas pendientes
+- Estructura Markdown consistente para versionaje
+
+## Instalación Rápida
+
+1. Clonar o descargar este repositorio
+2. Copiar la carpeta a `~/.copilot/skills/prd-diario` (o `%USERPROFILE%\.copilot\skills\prd-diario` en Windows)
+3. Los scripts están en `scripts/` listos para usar
+
+## Uso Rápido
+
+Con Claude/Copilot:
+```
+"Vamos a crear el PRD de hoy"
+"Agregada tarea completada: [descripción], hora: [HH:MM]"
+```
+
+Con scripts directos:
+```bash
+python scripts/create_daily_prd.py
+# o
+.\scripts\create_daily_prd.ps1
+```
+
+## Licencia
+
+MIT - Ver [LICENSE.txt](LICENSE.txt)
+
+---
+
+**Creado**: 16 de febrero de 2026  
+**Autor**: Juan José Luna (Luna-Soft)
