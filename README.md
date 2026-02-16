@@ -1,15 +1,14 @@
 # PRD Diario - GitHub Copilot Skill
 
-Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados con formato jerárquico legible. Incluye generación automática de reportes de horas y dashboard visual HTML interactivo.
+Skill para GitHub Copilot que gestiona tareas diarias creando PRDs estructurados con formato jerárquico legible. Incluye generación automática de reportes de horas con scripts Python y PowerShell.
 
 ## 🎯 Características
 
 ✅ **Formato jerárquico legible** - Estructura clara con encabezados H3 y emojis  
 ✅ **Timestamps precisos** - Registra hora exacta de cada tarea  
 ✅ **Documentación completa** - Descripción + Solución para auditoría  
-✅ **Reportes automáticos de horas** - Scripts Python/PowerShell generan reportes diarios  
-✅ **Dashboard visual HTML** - Dashboard interactivo con gráficos y tema light/dark  
-✅ **Gestión de pendientes** - Seguimiento de tareas incompletas  
+✅ **Reportes automáticos de horas** - Scripts Python/PowerShell generan reportes diarios
+✅ **Gestión de pendientes** - Seguimiento de tareas incompletas
 ✅ **Git-friendly** - Markdown puro, fácil de versionear  
 ✅ **Scripts reutilizables** - Python y PowerShell para toda la automatización  
 
@@ -24,8 +23,7 @@ prd-diario/
 │   ├── create_daily_prd.ps1           # Versión PowerShell
 │   ├── generate_hours_report.py       # Genera HORAS_PRD_YYYYMMDD.md
 │   ├── generate_hours_report.ps1      # Versión PowerShell
-│   ├── generate_dashboard.py          # Genera PRD_YYYYMMDD_DASHBOARD.html
-│   └── generate_dashboard.ps1         # Versión PowerShell
+│   └── generate_hours_report.ps1      # Versión PowerShell
 ├── references/
 │   └── structure.md                   # Documentación detallada
 └── assets/
@@ -142,32 +140,6 @@ Genera automáticamente `HORAS_PRD_YYYYMMDD.md` con:
 - Total de horas trabajadas
 - Promedio por tarea
 
-#### Generar Dashboard Visual HTML
-
-**Python:**
-```bash
-python scripts/generate_dashboard.py PRD_260216.md
-# → Crea: ~/Documents/prd_diarios/PRD_260216_DASHBOARD.html
-
-# Sobrescribir carpeta de salida:
-python scripts/generate_dashboard.py PRD_260216.md --output ./dashboards
-# → Crea: ./dashboards/PRD_260216_DASHBOARD.html
-```
-
-**PowerShell:**
-```powershell
-.\scripts\generate_dashboard.ps1 -PRDFile "PRD_260216.md" [-Output "./dashboards"]
-```
-
-Genera automáticamente `PRD_YYYYMMDD_DASHBOARD.html` con:
-- Estadísticas en tiempo real (tareas, horas, progreso)
-- Barra de progreso visual
-- Cards por cada tarea completada/pendiente
-- Toggle theme light/dark
-- Diseño responsive (funciona en móvil)
-- Archivo HTML standalone (sin dependencias externas)
-- Abre directamente en navegador
-
 ### Formato Jerárquico (Nuevo)
 
 ```markdown
@@ -263,7 +235,6 @@ Este skill puede trabajar junto con:
 3. **Documenta bien** - Explica QUÉ se hizo, POR QUÉ y RESULTADO obtenido
 4. **Marca pendientes** - Al final del día, lista lo incompleto
 5. **Genera reporte de horas** - Al cierre del día, corre el script de horas
-6. **Visualiza en dashboard** - Abre el HTML en navegador para ver progreso visual
 7. **Revisa completitud** - Antes de terminar, valida toda la información
 
 ## 📖 Documentación
@@ -274,23 +245,19 @@ Este skill puede trabajar junto con:
 
 ## 📝 Historial de Cambios
 
-### v1.2 (2026-02-16)
-- ✅ Dashboard HTML visual e interactivo (Python + PowerShell)
-- ✅ Estadísticas en tiempo real con gráficos
-- ✅ Theme toggle (light/dark mode con localStorage)
-- ✅ Diseño responsive para móvil
-- ✅ Fase 5: Visualización en dashboard
-
 ### v1.1 (2026-02-16)
-- ✅ Nuevo formato jerárquico (### ✅ N. Task — **HH:MM**)
-- ✅ Scripts de generación de reportes de horas (Python + PowerShell)
-- ✅ Documentación actualizada con ejemplos nuevos
-- ✅ Fase 4: Reportes automáticos de horas
+- ✅ Configuración centralizada (config.json)
+- ✅ Scripts Python/PowerShell que leen configuración automáticamente
+- ✅ Ruta por defecto configurable: ~/Documents/prd_diarios
+- ✅ Argumentos --path/--output para sobrescribir configuración
+- ✅ Documentación completa con ejemplos de uso
 
 ### v1.0 (2026-02-16)
 - Versión inicial con creación de PRDs
-- Scripts Python y PowerShell
-- Fase 1-3: Crear, registrar tareas, gestionar pendientes
+- Formato jerárquico (### ✅ N. Task — **HH:MM**)
+- Scripts de generación de reportes de horas (Python + PowerShell)
+- Gestión de tareas completadas y pendientes
+- Fase 1-4: Crear, registrar tareas, gestionar pendientes, reportes automáticos
 
 ## 📄 Licencia
 
