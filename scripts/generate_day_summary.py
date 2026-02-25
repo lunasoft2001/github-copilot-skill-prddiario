@@ -30,12 +30,19 @@ import platform
 # Load configuration
 CONFIG_FILE = Path(__file__).parent.parent / "config.json"
 DEFAULT_BASE_DIR = "."
+DEFAULT_REPORTS_DIR = None
 
 if CONFIG_FILE.exists():
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            DEFAULT_BASE_DIR = os.path.expanduser(config.get("prd_base_directory", "."))
+            folders = config.get("folders", {})
+            DEFAULT_BASE_DIR = os.path.expanduser(
+                folders.get("daily_work", ".")
+            )
+            DEFAULT_REPORTS_DIR = os.path.expanduser(
+                folders.get("reports", None)
+            )
     except Exception:
         pass
 
@@ -274,7 +281,13 @@ def generate_summary_report(analysis, date_obj, output_dir=None):
     
     # Save report
     if output_dir is None:
-        output_path = Path(analysis['folder_path']) / f"RESUMEN_{folder_name}.md"
+        if DEFAULT_REPORTS_DIR:
+            reports_path = Path(DEFAULT_REPORTS_DIR).expanduser()
+            reports_path.mkdir(parents=True, exist_ok=True)
+            output_path = reports_path / f"RESUMEN_{folder_name}.md"
+        else:
+            # Fallback: save in the daily work folder
+            output_path = Path(analysis['folder_path']) / f"RESUMEN_{folder_name}.md"
     else:
         output_path = Path(output_dir).expanduser() / f"RESUMEN_{folder_name}.md"
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -293,12 +306,12 @@ def main():
 Ejemplos:
   python generate_day_summary.py                    # Resumen de hoy
   python generate_day_summary.py --date 20260225   # Resumen de fecha específica
-  python generate_day_summary.py --output ./reports # Guardar en carpeta específica
+  python generate_day_summary.py --output ./custom  # Guardar en carpeta custom
         """
     )
     parser.add_argument('--date', help='Fecha en formato YYYYMMDD (default: hoy)')
-    parser.add_argument('--path', default=None, help=f'Ruta base (default: {DEFAULT_BASE_DIR})')
-    parser.add_argument('--output', default=None, help='Carpeta de salida (default: misma carpeta del día)')
+    parser.add_argument('--path', default=None, help=f'Ruta base DAILY_WORK (default: {DEFAULT_BASE_DIR})')
+    parser.add_argument('--output', default=None, help='Carpeta de salida para reporte (default: carpeta REPORTS)')
     
     args = parser.parse_args()
     

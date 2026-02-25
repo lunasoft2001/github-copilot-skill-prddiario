@@ -20,13 +20,15 @@ from pathlib import Path
 
 # Load configuration
 CONFIG_FILE = Path(__file__).parent.parent / "config.json"
-DEFAULT_BASE_DIR = "."
+DEFAULT_DAILY_WORK_DIR = "~/Documents/prd_diarios/DAILY_WORK"
 
 if CONFIG_FILE.exists():
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            DEFAULT_BASE_DIR = os.path.expanduser(config.get("prd_base_directory", "."))
+            DEFAULT_DAILY_WORK_DIR = os.path.expanduser(
+                config.get("folders", {}).get("daily_work", DEFAULT_DAILY_WORK_DIR)
+            )
     except Exception:
         pass
 
@@ -41,7 +43,7 @@ def parse_date(date_str):
 
 def create_daily_folder(date_str=None, base_path=None):
     """
-    Create a daily folder with format YYMMDD.
+    Create a daily folder with format YYMMDD in DAILY_WORK directory.
     
     Args:
         date_str: Date in YYYYMMDD format. If None, uses today's date.
@@ -51,7 +53,7 @@ def create_daily_folder(date_str=None, base_path=None):
         tuple: (folder_name, folder_path, success: bool, message: str)
     """
     if base_path is None:
-        base_path = DEFAULT_BASE_DIR
+        base_path = DEFAULT_DAILY_WORK_DIR
     
     # Determine date
     if date_str is None:
@@ -77,17 +79,26 @@ def create_daily_folder(date_str=None, base_path=None):
         
         # Create a README.md inside with the date
         readme_path = folder_path / "README.md"
-        readme_content = f"""# Documentación del Día - {date_obj.strftime('%d/%m/%Y')}
+        readme_content = f"""# Trabajo del Día - {date_obj.strftime('%d/%m/%Y')}
 
-Esta carpeta contiene todos los documentos generados durante el día:
+Esta carpeta contiene todos los documentos del trabajo realizado durante el día.
 
-- **PRD del día**: Documento de tareas realizadas
+## Estructura
+
+- **PRD**: Documento de tareas realizadas (guardado en carpeta PRD_DOCUMENTS)
 - **Conversaciones**: Logs de conversaciones importantes
-- **Documentos adicionales**: Cualquier archivo relevante del día
+- **Notas**: Apuntes y decisiones del día
+- **Documentos**: Archivos relevantes generados
+
+## Referencia
+
+- PRD: `PRD_DOCUMENTS/PRD_{date_obj.strftime('%Y%m%d')}.md`
+- Resumen: `REPORTS/RESUMEN_{folder_name}.md`
 
 ---
 
 *Carpeta creada automáticamente por script create_daily_folder.py*
+*Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
 """
         with open(readme_path, 'w', encoding='utf-8') as f:
             f.write(readme_content)
@@ -99,17 +110,17 @@ Esta carpeta contiene todos los documentos generados durante el día:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Crear una carpeta diaria con formato YYMMDD",
+        description="Crear una carpeta diaria con formato YYMMDD en DAILY_WORK",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
   python create_daily_folder.py                    # Crea carpeta para hoy
   python create_daily_folder.py --date 20260225   # Crea para fecha específica
-  python create_daily_folder.py --path ./My/Path  # Especifica carpeta base
+  python create_daily_folder.py --path ./Custom   # Especifica carpeta custom
         """
     )
     parser.add_argument('--date', help='Fecha en formato YYYYMMDD (default: hoy)')
-    parser.add_argument('--path', default=None, help=f'Ruta base (default: {DEFAULT_BASE_DIR})')
+    parser.add_argument('--path', default=None, help=f'Ruta base (default: {DEFAULT_DAILY_WORK_DIR})')
     
     args = parser.parse_args()
     

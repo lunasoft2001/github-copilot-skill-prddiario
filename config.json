@@ -1,11 +1,22 @@
 {
-  "prd_base_directory": "~/Documents/prd_diarios",
-  "use_daily_folders": true,
-  "description": "Configuración para el skill prd-diario con carpetas diarias",
-  "notes": "Puedes sobrescribir estos valores usando los argumentos --path o --output en los scripts",
+  "version": "1.0.0",
+  "description": "Configuración de PRD Diario con carpetas separadas",
+  "notes": "Ejecuta: python scripts/setup_config.py para configuración personalizada",
+  "folders": {
+    "prd_documents": "~/Documents/prd_diarios/PRD_DOCUMENTS",
+    "daily_work": "~/Documents/prd_diarios/DAILY_WORK",
+    "reports": "~/Documents/prd_diarios/REPORTS",
+    "archives": "~/Documents/prd_diarios/ARCHIVES"
+  },
   "features": {
-    "daily_folders": "Organiza documentos en carpetas YYMMDD",
-    "auto_summary": "Genera resumen automático del día",
-    "file_metadata": "Rastrea fecha de creación de documentos"
+    "use_daily_folders": true,
+    "auto_summary": true,
+    "track_file_metadata": true
+  },
+  "info": {
+    "prd_documents": "Donde se guardan los PRD_YYYYMMDD.md",
+    "daily_work": "Carpetas diarias organizadas por YYMMDD (260225, 260226, etc.)",
+    "reports": "Resúmenes, reportes de horas y análisis diarios",
+    "archives": "Días completados archivados para referencia histórica"
   }
 }

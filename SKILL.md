@@ -8,15 +8,17 @@ license: MIT
 
 ## Descripción General
 
-Automatiza la creación y organización de Documentos de Requisitos de Productos (PRD) diarios para un seguimiento estructurado de tareas. Organiza todo en carpetas diarias con formato YYMMDD. Ideal para:
+Automatiza la creación y organización de Documentos de Requisitos de Productos (PRD) diarios para un seguimiento estructurado de tareas. **Mantiene separadas las carpetas de PRD, trabajo diario, reportes y archivos**. Ideal para:
 
-- **Organización por carpetas diarias** (formato YYMMDD: 260225, 260226, etc.)
+- **Organización flexible** - Configura dónde guardar cada tipo de documento
+- **Carpetas PRD centralizadas** - Todos los `PRD_YYYYMMDD.md` en un solo lugar
+- **Trabajo diario organizado** - Carpetas YYMMDD separadas para documentos del día
+- **Reportes consolidados** - Resúmenes y análisis en una carpeta dedicada
+- **Archivo histórico** - Días completados archivados para referencia
 - **Registro de tareas** con timestamps exactos y documentación completa
-- **Gestión unificada** de PRD, conversaciones y documentos del día
 - **Resúmenes automáticos** que analizan metadatos de archivos
 - **Rastreo de inicio de jornada** usando fecha de creación de documentos
 - **Reportes de horas trabajadas** y auditoría completa
-- **Seguimiento de tareas pendientes** para el día siguiente
 
 ## Cuándo Usar Este Skill
 
@@ -34,23 +36,54 @@ Use este skill cuando:
 
 ## Flujo de Trabajo
 
-### Fase 0: Inicio del Día (NUEVO)
+### Fase 0: Configuración Inicial (IMPORTANTE!)
 
-Cuando empiece el día de trabajo:
+**Primera ejecución - Configura tus carpetas:**
 
-1. **Crear carpeta diaria**: Crea automáticamente carpeta con formato YYMMDD
-2. **Crear PRD**: Genera PRD_YYYYMMDD.md dentro de la carpeta
-3. **Listo para trabajar**: La carpeta está lista para recibir todos los documentos del día
+```bash
+python scripts/setup_config.py
+```
 
-**Estructura creada:**
+Este wizard interactivo te permite elegir dónde guardar:
+- 📄 **PRD_DOCUMENTS**: Donde van todos los `PRD_YYYYMMDD.md`
+- 📁 **DAILY_WORK**: Donde se crean carpetas YYMMDD por día
+- 📊 **REPORTS**: Donde se generan resúmenes y reportes
+- 📦 **ARCHIVES**: Donde archivar días completados (opcional)
+
+**Estructura recomendada:**
 ```
 ~/Documents/prd_diarios/
-  └── 260225/                    # Carpeta del día (YYMMDD)
-      ├── README.md              # Info de la carpeta
-      └── PRD_20260225.md        # PRD del día
+  ├── PRD_DOCUMENTS/              ← Todos los PRD centralizados
+  │   ├── PRD_20260225.md
+  │   ├── PRD_20260226.md
+  │   └── PRD_20260227.md
+  ├── DAILY_WORK/                 ← Trabajo diario por carpetas
+  │   ├── 260225/
+  │   │   ├── README.md
+  │   │   ├── conversacion_cliente.md
+  │   │   └── notas_meeting.md
+  │   ├── 260226/
+  │   └── 260227/
+  ├── REPORTS/                    ← Resúmenes y reportes
+  │   ├── RESUMEN_260225.md
+  │   ├── RESUMEN_260226.md
+  │   ├── HORAS_PRD_20260225.md
+  │   └── HORAS_PRD_20260226.md
+  └── ARCHIVES/                   ← Días completados
+      └── (semanas antiguas)
 ```
 
-### Fase 1: Durante el Día
+**Ver configuración actual:**
+```bash
+python scripts/setup_config.py --show
+```
+
+**Resetear configuración:**
+```bash
+python scripts/setup_config.py --reset
+```
+
+### Fase 1: Inicio del Día (NUEVO)
 
 Mientras trabajas:
 
@@ -68,7 +101,25 @@ Mientras trabajas:
   └── diagrama_arquitectura.png
 ```
 
-### Fase 2: Fin del Día
+Mientras trabajas:
+
+1. **Registrar tareas**: Añade tareas completadas con timestamps en el PRD
+2. **Guardar documentos**: Guarda conversaciones, notas, archivos en DAILY_WORK/260225/
+3. **Actualizar PRD**: Documenta descripción + solución de cada tarea en PRD_DOCUMENTS/
+
+**Estructura típica durante el día:**
+```
+DAILY_WORK/260225/
+  ├── README.md
+  ├── conversacion_cliente_proyecto_X.md
+  ├── notas_meeting_equipo.md
+  └── diagrama_arquitectura.png
+
+PRD_DOCUMENTS/
+  └── PRD_20260225.md          ← Actualizado con tareas
+```
+
+### Fase 3: Fin del Día
 
 Al terminar la jornada:
 
@@ -191,38 +242,66 @@ En curso
 
 ## Patrón de Uso - Paso a Paso
 
-### Iniciar el Día (NUEVO)
+### ⚙️ Primer Día - Configuración Inicial
+
+```
+Usuario: "Configura el skill prddiario"
+Claude:
+1. Ejecuta: python scripts/setup_config.py
+2. Pregunta interactiva por rutas:
+   - ¿Dónde guardar los PRD?
+   - ¿Dónde guardar el trabajo diario?
+   - ¿Dónde guardar los reportes?
+   - ¿Dónde archivar días completados?
+3. Pregunta sobre features (resúmenes automáticos, metadata, etc.)
+4. Guarda configuración en config.json
+5. Confirma:
+   ✅ PRD_DOCUMENTS configurado
+   ✅ DAILY_WORK configurado
+   ✅ REPORTS configurado
+   ✅ ARCHIVES configurado
+```
+
+### Iniciar el Día
 
 ```
 Usuario: "Vamos a iniciar el día" o "Crear PRD de hoy"
 Claude:
-1. Obtiene fecha actual (ej: 25 de febrero de 2026)
-2. Crea carpeta 260225 si no existe
-3. Crea PRD_20260225.md dentro de la carpeta
-4. La carpeta queda lista para recibir documentos del día
+1. Ejecuta: python scripts/create_daily_folder.py
+   → Crea 260225 en DAILY_WORK/
+2. Ejecuta: python scripts/create_daily_prd.py
+   → Crea PRD_20260225.md en PRD_DOCUMENTS/
+3. Confirma:
+   ✅ Carpeta creada: ~/Documents/prd_diarios/DAILY_WORK/260225/
+   ✅ PRD creado: ~/Documents/prd_diarios/PRD_DOCUMENTS/PRD_20260225.md
 ```
 
-**Ejemplo de comando:**
-```bash
-python scripts/create_daily_prd.py
+**Estructura después:**
+```
+DAILY_WORK/260225/          ← Nuevas conversaciones aquí
+  └── README.md
+
+PRD_DOCUMENTS/
+  └── PRD_20260225.md       ← Actualizar con tareas del día
 ```
 
-### Guardar Documentos Durante el Día (NUEVO)
+### Guardar Documentos Durante el Día
 
 ```
 Usuario: "Guarda esta conversación en el día de hoy"
 Claude:
-1. Identifica la carpeta del día (ej: 260225)
-2. Guarda el archivo dentro de esa carpeta
-3. El archivo queda organizado junto al PRD
+1. Identifica fecha actual (ej: 260225)
+2. Guarda archivo en: DAILY_WORK/260225/
+3. El archivo queda organizado junto a otros documentos del día
 ```
 
-**Estructura generada:**
+**Ejemplos de archivos guardados:**
 ```
-260225/
-  ├── PRD_20260225.md
-  ├── conversacion_proyecto_X.md  ← Nuevo
-  └── README.md
+DAILY_WORK/260225/
+  ├── README.md
+  ├── conversacion_proyecto_X_cliente.md    ← Nuevo
+  ├── notas_meeting_equipo.md              ← Nuevo
+  └── diagrama_arquitectura.png             ← Nuevo
 ```
 
 ### Crear PRD Nuevo (Método Original)
@@ -239,17 +318,22 @@ Claude:
 ### Registrar Tarea Completada
 
 ```
-Usuario: "Completé: Revisar correos. Tomó 45 minutos. Fueron 23 correos nuevos, respondí prioritarios."
+Usuario: "Completé: Revisar correos. Tomó 45 minutos. Fueron 23 correos, respondí prioritarios."
 Claude:
 1. Obtiene hora actual: 10:30
-2. Calcula número: siguiente número disponible
-3. Agrega sección con formato jerárquico:
+2. Calcula número siguiente en PRD
+3. Actualiza PRD_DOCUMENTS/PRD_20260225.md:
    ### ✅ N. Revisar correos — **10:30**
    **Descripción**  
    Revisión diaria de correos...
    **Solución**  
    Se procesaron 23 correos nuevos...
-4. Actualiza PRD en archivo
+4. Confirma actualización en PRD
+```
+
+**Actualización en:**
+```
+PRD_DOCUMENTS/PRD_20260225.md  ← Se actualiza con tarea
 ```
 
 ### Generar Reporte de Horas
@@ -257,41 +341,58 @@ Claude:
 ```
 Usuario: "Genera el reporte de horas de hoy"
 Claude:
-1. Ejecuta: python scripts/generate_hours_report.py PRD_260216.md
-2. Lee todas las tareas y timestamps del PRD
-3. Calcula duración entre tareas
-4. Genera HORAS_PRD_260216.md con totales
-5. Confirma generación exitosa
+1. Ejecuta: python scripts/generate_hours_report.py PRD_20260225.md
+2. Lee PRD_DOCUMENTS/PRD_20260225.md
+3. Extrae tareas y timestamps
+4. Calcula duración entre tareas
+5. Genera REPORTS/HORAS_PRD_20260225.md
+6. Confirma generación:
+   ✅ Reporte guardado: ~/Documents/prd_diarios/REPORTS/HORAS_PRD_20260225.md
+   📊 Horas trabajadas: 7h 30m
+   📋 Tareas registradas: 5
 ```
 
-### Generar Resumen del Día (NUEVO)
+**Output:**
+```
+REPORTS/HORAS_PRD_20260225.md
+  - Desglose por tarea
+  - Duración de cada una
+  - Horas totales
+  - Promedio
+```
+
+### Generar Resumen del Día
 
 ```
 Usuario: "Dame un resumen del día" o "Genera resumen del día"
 Claude:
 1. Ejecuta: python scripts/generate_day_summary.py
-2. Analiza carpeta del día (ej: 260225)
-3. Lee metadatos de TODOS los archivos (fechas creación/modificación)
+2. Analiza DAILY_WORK/260225/
+3. Lee metadatos de TODOS los archivos
 4. Determina hora de inicio (primer archivo creado)
-5. Extrae tareas del PRD (completadas y pendientes)
+5. Extrae tareas del PRD
 6. Calcula horas trabajadas
-7. Genera RESUMEN_260225.md con:
-   - Información general (inicio, tareas, horas, documentos)
-   - Tareas realizadas (con timestamps)
+7. Genera REPORTS/RESUMEN_260225.md con:
+   - Información general (hora inicio, tareas, horas, documentos)
+   - Tareas realizadas con timestamps
    - Tareas pendientes
-   - Lista de todos los documentos con metadatos
-8. Confirma generación exitosa
+   - Lista de documentos con metadatos
+8. Confirma:
+   ✅ Resumen guardado: ~/Documents/prd_diarios/REPORTS/RESUMEN_260225.md
+   📊 Estadísticas:
+      - Tareas completadas: 5
+      - Tareas pendientes: 2
+      - Horas trabajadas: 7h 30m
+      - Documentos: 8
 ```
 
-**Ejemplo de salida:**
+**Output:**
 ```
-✅ Resumen generado exitosamente: 260225/RESUMEN_260225.md
-
-📊 Estadísticas:
-   - Tareas completadas: 5
-   - Tareas pendientes: 2
-   - Horas trabajadas: 7h 30m
-   - Documentos: 8
+REPORTS/RESUMEN_260225.md
+  - Información del día
+  - Tareas completadas/pendientes
+  - Documentos generados
+  - Análisis de metadatos
 ```
 
 ## Características Clave
@@ -337,31 +438,67 @@ Se implementó cliente Stripe official. Se integraron webhooks para confirmació
 
 ## Scripts Disponibles
 
-### create_daily_folder.py (NUEVO)
+### setup_config.py (NUEVO - IMPORTANTE!)
 
-Crea una carpeta diaria con formato YYMMDD y README.md inicial.
+Asistente interactivo para configurar las rutas de trabajo.
 
 ```bash
-python scripts/create_daily_folder.py [--date 2026-02-25] [--path ./path]
+python scripts/setup_config.py              # Ejecuta wizard interactivo
+python scripts/setup_config.py --show       # Muestra configuración actual
+python scripts/setup_config.py --reset      # Resetea la configuración
 ```
 
 **Características:**
-- Crea carpeta con formato YYMMDD (260225 para 25 de febrero de 2026)
-- Genera README.md dentro de la carpeta con información del día
+- Interfaz interactiva y amigable
+- Configura PRD_DOCUMENTS, DAILY_WORK, REPORTS, ARCHIVES
+- Valida rutas y crea directorios
+- Guarda configuración en config.json
+- Compatible con macOS, Linux y Windows
+
+### create_daily_folder.py
+
+### create_daily_folder.py
+
+Crea una carpeta diaria con formato YYMMDD en la carpeta DAILY_WORK.
+
+```bash
+python scripts/create_daily_folder.py [--date 20260225] [--path ./custom]
+```
+
+**Características:**
+- Crea carpeta en DAILY_WORK (configurado en setup_config.py)
+- Formato YYMMDD (260225 para 25 de febrero de 2026)
+- Genera README.md dentro con información del día
 - Verifica si la carpeta ya existe antes de crear
+
+**Estructura creada:**
+```
+DAILY_WORK/260225/
+  ├── README.md
+  └── (vacía, lista para documentos)
+```
 
 ### create_daily_prd.py (ACTUALIZADO)
 
-Crea un nuevo archivo PRD_YYYYMMDD.md **dentro de la carpeta del día**.
+Crea un nuevo archivo PRD_YYYYMMDD.md en la carpeta PRD_DOCUMENTS.
 
 ```bash
-python scripts/create_daily_prd.py [--date 2026-02-16] [--path ./path]
+python scripts/create_daily_prd.py [--date 20260216] [--path ./custom]
 ```
 
-**Novedades:**
-- Si `use_daily_folders: true` en config.json, crea automáticamente la carpeta YYMMDD
-- Guarda el PRD dentro de la carpeta del día
-- Incluye timestamp de creación en el documento
+**Características:**
+- Crea PRD en carpeta PRD_DOCUMENTS (configurada en setup_config.py)
+- Nombre: PRD_20260225.md
+- Incluye estructura inicial y timestamp
+- También usable para PRDs de otros días/proyectos
+
+**Estructura creada:**
+```
+PRD_DOCUMENTS/
+  ├── PRD_20260225.md
+  ├── PRD_20260226.md
+  └── PRD_20260227.md
+```
 
 ### create_daily_prd.ps1
 
@@ -371,33 +508,42 @@ Versión PowerShell de creación de PRD con soporte para carpetas diarias.
 .\scripts\create_daily_prd.ps1 -Date "2026-02-16" -Output "./path"
 ```
 
-### generate_day_summary.py (NUEVO)
+### generate_day_summary.py (ACTUALIZADO)
 
-Analiza todos los archivos de la carpeta del día y genera un resumen completo.
+Analiza todos los archivos de la carpeta diaria (DAILY_WORK/YYMMDD/) y genera un resumen completo en REPORTS/.
 
 ```bash
-python scripts/generate_day_summary.py [--date 20260225] [--path ./base] [--output ./reports]
+python scripts/generate_day_summary.py [--date 20260225] [--path ./custom] [--output ./custom]
 ```
 
 **Características:**
-- Lee **metadatos** de todos los archivos (fecha creación, modificación, tamaño)
+- Lee **metadatos** de todos los archivos en DAILY_WORK/YYMMDD/
 - Determina **hora de inicio del día** (primer archivo creado)
 - Extrae **tareas del PRD** (completadas y pendientes)
 - Calcula **horas trabajadas** basado en timestamps
 - Lista **todos los documentos** generados en el día
-- Genera **RESUMEN_YYMMDD.md** con análisis completo
+- Guarda **RESUMEN_YYMMDD.md** en carpeta REPORTS
 
-**Output:** `RESUMEN_260225.md` dentro de la carpeta del día
+**Input:** `DAILY_WORK/260225/` (carpeta con documentos del día)  
+**Output:** `REPORTS/RESUMEN_260225.md`
 
-### generate_hours_report.py
+### generate_hours_report.py (ACTUALIZADO)
 
-Analiza un PRD y genera reporte de horas trabajadas.
+Analiza un PRD diario y genera reporte detallado de horas trabajadas en carpeta REPORTS/.
 
 ```bash
-python scripts/generate_hours_report.py PRD_260216.md [--output ./reports]
+python scripts/generate_hours_report.py PRD_20260216.md [--output ./custom]
 ```
 
-**Output:** `HORAS_PRD_260216.md` con desglose detallado
+**Características:**
+- Lee el PRD de PRD_DOCUMENTS/
+- Extrae timestamps de tareas
+- Calcula duración entre tareas
+- Guarda reporte en carpeta REPORTS
+- Genera desglose detallado de horas
+
+**Input:** `PRD_DOCUMENTS/PRD_20260225.md`  
+**Output:** `REPORTS/HORAS_PRD_20260225.md`
 
 ### generate_hours_report.ps1
 
@@ -409,25 +555,29 @@ Versión PowerShell de generación de reportes.
 
 ## Checklist de Completitud
 
-Antes de terminar el día, verifica:
+**Configuración Inicial (Primera vez):**
+- [ ] Ejecutaste `python scripts/setup_config.py`
+- [ ] Configuraste correctamente PRD_DOCUMENTS
+- [ ] Configuraste correctamente DAILY_WORK
+- [ ] Configuraste correctamente REPORTS
+- [ ] Las rutas se crearon correctamente
 
-- [ ] ¿Todas las tareas realizadas tienen descripción clara?
-- [ ] ¿Cada solución explica QUÉ se hizo y POR QUÉ?
-- [ ] ¿Hay timestamps para cada tarea?
-- [ ] ¿Las tareas pendientes están claramente documentadas?
-- [ ] ¿El PRD está guardado en la carpeta del día (YYMMDD)?
-- [ ] ¿Todos los documentos del día están en la carpeta diaria?
-- [ ] ¿Has generado el resumen del día? (`generate_day_summary.py`)
-- [ ] ¿Verificaste que el resumen incluye hora de inicio correcta?
-- [ ] ¿Generaste el reporte de horas detallado? (opcional: `generate_hours_report.py`)
-- [ ] ¿Validaste que los totales de horas son correctos?
+**Cada Día:**
+- [ ] Creaste carpeta diaria con `create_daily_folder.py`
+- [ ] Creaste PRD con `create_daily_prd.py`
+- [ ] Registraste todas las tareas con descripción clara
+- [ ] Cada solución explica QUÉ se hizo y POR QUÉ
+- [ ] Hay timestamps para cada tarea
+- [ ] Tareas pendientes están documentadas
+- [ ] Guardaste todos los documentos en DAILY_WORK/YYMMDD/
 
-**NUEVO: Checklist Carpetas Diarias**
-
-- [ ] ¿La carpeta tiene formato YYMMDD correcto?
-- [ ] ¿Hay un README.md descriptivo en la carpeta?
-- [ ] ¿El RESUMEN_YYMMDD.md fue generado?
-- [ ] ¿Están todos los documentos relevantes archivados?
+**Fin de Día:**
+- [ ] Todos los documentos están en DAILY_WORK/260225/
+- [ ] PRD está actualizado en PRD_DOCUMENTS/
+- [ ] Generaste el resumen: `generate_day_summary.py`
+- [ ] Verificaste que RESUMEN_260225.md está en REPORTS/
+- [ ] Generaste el reporte de horas (opcional)
+- [ ] Validaste que los totales de horas son correctos
 
 ## Referencias
 

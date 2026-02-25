@@ -26,9 +26,16 @@ if CONFIG_FILE.exists():
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            default_output = config.get("prd_output_directory", None)
-            if default_output:
-                DEFAULT_OUTPUT_DIR = os.path.expanduser(default_output)
+            # Try new config format
+            folders = config.get("folders", {})
+            reports_dir = folders.get("reports")
+            if reports_dir:
+                DEFAULT_OUTPUT_DIR = os.path.expanduser(reports_dir)
+            else:
+                # Fallback to old config format
+                default_output = config.get("prd_output_directory", None)
+                if default_output:
+                    DEFAULT_OUTPUT_DIR = os.path.expanduser(default_output)
     except Exception:
         pass
 

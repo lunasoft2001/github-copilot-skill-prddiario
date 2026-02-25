@@ -22,15 +22,25 @@ from pathlib import Path
 CONFIG_FILE = Path(__file__).parent.parent / "config.json"
 DEFAULT_BASE_DIR = "."
 USE_DAILY_FOLDERS = True
+PRD_DOCUMENTS_DIR = "~/Documents/prd_diarios/PRD_DOCUMENTS"
 
 if CONFIG_FILE.exists():
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            DEFAULT_BASE_DIR = os.path.expanduser(config.get("prd_base_directory", "."))
-            USE_DAILY_FOLDERS = config.get("use_daily_folders", True)
+            # Try to get PRD documents directory from folders config
+            prd_docs = config.get("folders", {}).get("prd_documents")
+            if prd_docs:
+                PRD_DOCUMENTS_DIR = os.path.expanduser(prd_docs)
+            # Fallback to old config format
+            if not prd_docs:
+                DEFAULT_BASE_DIR = os.path.expanduser(
+                    config.get("prd_base_directory", ".")
+                )
+                PRD_DOCUMENTS_DIR = DEFAULT_BASE_DIR
+            USE_DAILY_FOLDERS = config.get("features", {}).get("use_daily_folders", True)
     except Exception:
-        pass
+        PRD_DOCUMENTS_DIR = DEFAULT_BASE_DIR
 
 TEMPLATE = """# PRD - {date_spanish}
 
@@ -96,7 +106,7 @@ def format_spanish_date(date_obj):
 
 def create_prd(date_str=None, path=None):
     """
-    Create a new daily PRD file.
+    Create a new daily PRD file in PRD_DOCUMENTS directory.
     
     Args:
         date_str: Date in YYYYMMDD format. If None, uses today's date.
@@ -106,7 +116,7 @@ def create_prd(date_str=None, path=None):
         tuple: (filename, filepath, success: bool, message: str)
     """
     if path is None:
-        path = DEFAULT_BASE_DIR
+        path = PRD_DOCUMENTS_DIR
     
     # Determine date
     if date_str is None:
@@ -114,17 +124,9 @@ def create_prd(date_str=None, path=None):
     else:
         date_obj = parse_date(date_str)
     
-    # Create base directory
-    base_dir = Path(path).expanduser()
-    base_dir.mkdir(parents=True, exist_ok=True)
-    
-    # If using daily folders, create YYMMDD folder structure
-    if USE_DAILY_FOLDERS:
-        folder_name = date_obj.strftime("%y%m%d")
-        output_dir = base_dir / folder_name
-        output_dir.mkdir(parents=True, exist_ok=True)
-    else:
-        output_dir = base_dir
+    # Create output directory
+    output_dir = Path(path).expanduser()
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Generate filename
     date_formatted = date_obj.strftime("%Y%m%d")
@@ -151,19 +153,17 @@ def create_prd(date_str=None, path=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Crear un nuevo PRD diario",
+        description="Crear un nuevo PRD diario en carpeta PRD_DOCUMENTS",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python create_daily_prd.py                    # Crea PRD para hoy (en carpeta YYMMDD)
+  python create_daily_prd.py                    # Crea PRD para hoy
   python create_daily_prd.py --date 20260217   # Crea para fecha específica
-  python create_daily_prd.py --path ./My/Path  # Especifica carpeta base
-  
-Nota: Si use_daily_folders está activado en config.json, creará una carpeta YYMMDD
+  python create_daily_prd.py --path ./Custom   # Especifica carpeta custom
         """
     )
     parser.add_argument('--date', help='Fecha en formato YYYYMMDD (default: hoy)')
-    parser.add_argument('--path', default=None, help=f'Ruta base (default: {DEFAULT_BASE_DIR})')
+    parser.add_argument('--path', default=None, help=f'Ruta (default: {PRD_DOCUMENTS_DIR})')
     
     args = parser.parse_args()
     
