@@ -1,5 +1,5 @@
 ---
-name: prd-diario
+name: prddiario
 description: 'Gestiona tareas diarias con formato jerárquico legible, documentación completa (descripción + solución) con timestamps, y genera reportes automáticos de horas trabajadas. Usa cuando necesites crear PRD diario, registrar tareas completadas, gestionar pendientes, o generar reportes de horas. Incluye scripts Python/PowerShell para automatizar todo.'
 license: MIT
 ---
@@ -8,36 +8,88 @@ license: MIT
 
 ## Descripción General
 
-Automatiza la creación y actualización de Documentos de Requisitos de Productos (PRD) diarios para un seguimiento estructurado de tareas. Ideal para:
+Automatiza la creación y organización de Documentos de Requisitos de Productos (PRD) diarios para un seguimiento estructurado de tareas. Organiza todo en carpetas diarias con formato YYMMDD. Ideal para:
 
-- Registro de tareas realizadas con timestamps exactos
-- Documentación detallada de descripción y soluciones implementadas
-- Gestión de tareas pendientes para el día siguiente
-- Generación automática de reportes de horas trabajadas
-- Auditoría y reportes diarios a stakeholders
+- **Organización por carpetas diarias** (formato YYMMDD: 260225, 260226, etc.)
+- **Registro de tareas** con timestamps exactos y documentación completa
+- **Gestión unificada** de PRD, conversaciones y documentos del día
+- **Resúmenes automáticos** que analizan metadatos de archivos
+- **Rastreo de inicio de jornada** usando fecha de creación de documentos
+- **Reportes de horas trabajadas** y auditoría completa
+- **Seguimiento de tareas pendientes** para el día siguiente
 
 ## Cuándo Usar Este Skill
 
 Use este skill cuando:
 
-- Necesite crear un PRD nuevo para un día específico
-- Quiera registrar tareas completadas con hora exacta
-- Deba documentar soluciones de manera estructurada
-- Tenga tareas pendientes que requieran seguimiento
-- Necesite generar reportes de horas trabajadas al final del día
-- El usuario pida "crear PRD diario", "registrar tarea completada", o "generar reporte de horas"
+- Necesite **iniciar el día** y crear la carpeta + PRD diario
+- Quiera **registrar tareas** completadas con hora exacta  
+- Deba **documentar soluciones** de manera estructurada
+- Tenga **tareas pendientes** que requieran seguimiento
+- Necesite **guardar conversaciones** o documentos del día en un solo lugar
+- Quiera **generar resumen del día** automático con metadatos
+- Necesite **reportes de horas** trabajadas al final del día
+- Desee saber **cuándo empezó el día** (primer documento creado)
+- El usuario pida "crear PRD diario", "iniciar día", "registrar tarea", "resumen del día" o "generar reporte de horas"
 
 ## Flujo de Trabajo
 
-### Fase 1: Inicialización Diaria
+### Fase 0: Inicio del Día (NUEVO)
 
-Cuando sea la primera vez en el día:
+Cuando empiece el día de trabajo:
 
-1. **Verificar archivo existente**: Busca `PRD_YYYYMMDD.md` en carpeta del proyecto
-2. **Si existe**: Continúa a Fase 2
-3. **Si no existe**: Crea nuevo PRD usando `scripts/create_daily_prd.py` o `create_daily_prd.ps1`
+1. **Crear carpeta diaria**: Crea automáticamente carpeta con formato YYMMDD
+2. **Crear PRD**: Genera PRD_YYYYMMDD.md dentro de la carpeta
+3. **Listo para trabajar**: La carpeta está lista para recibir todos los documentos del día
 
-### Fase 2: Registrar Tareas Realizadas
+**Estructura creada:**
+```
+~/Documents/prd_diarios/
+  └── 260225/                    # Carpeta del día (YYMMDD)
+      ├── README.md              # Info de la carpeta
+      └── PRD_20260225.md        # PRD del día
+```
+
+### Fase 1: Durante el Día
+
+Mientras trabajas:
+
+1. **Registrar tareas**: Añade tareas completadas con timestamps
+2. **Guardar documentos**: Guarda conversaciones, notas, archivos en la carpeta del día
+3. **Actualizar PRD**: Documenta descripción + solución de cada tarea
+
+**Ejemplo de estructura durante el día:**
+```
+260225/
+  ├── README.md
+  ├── PRD_20260225.md
+  ├── conversacion_cliente_proyecto_X.md
+  ├── notas_meeting_equipo.md
+  └── diagrama_arquitectura.png
+```
+
+### Fase 2: Fin del Día
+
+Al terminar la jornada:
+
+1. **Generar resumen del día**: Ejecuta `generate_day_summary.py`
+2. **Analiza metadatos**: Lee fechas de creación de todos los archivos
+3. **Calcula horas**: Determina inicio (primer archivo) y tareas realizadas
+4. **Crea reporte**: Genera RESUMEN_YYMMDD.md con toda la información
+
+**Estructura final:**
+```
+260225/
+  ├── README.md
+  ├── PRD_20260225.md
+  ├── conversacion_cliente_proyecto_X.md
+  ├── notas_meeting_equipo.md
+  ├── diagrama_arquitectura.png
+  ├── RESUMEN_260225.md          # ← Generado automáticamente
+  └── HORAS_PRD_20260225.md      # ← Opcional: reporte de horas detallado
+```
+
+### Fase 3 (Antigua): Registrar Tareas Realizadas
 
 Para cada tarea completada:
 
@@ -139,14 +191,48 @@ En curso
 
 ## Patrón de Uso - Paso a Paso
 
-### Crear PRD Nuevo
+### Iniciar el Día (NUEVO)
+
+```
+Usuario: "Vamos a iniciar el día" o "Crear PRD de hoy"
+Claude:
+1. Obtiene fecha actual (ej: 25 de febrero de 2026)
+2. Crea carpeta 260225 si no existe
+3. Crea PRD_20260225.md dentro de la carpeta
+4. La carpeta queda lista para recibir documentos del día
+```
+
+**Ejemplo de comando:**
+```bash
+python scripts/create_daily_prd.py
+```
+
+### Guardar Documentos Durante el Día (NUEVO)
+
+```
+Usuario: "Guarda esta conversación en el día de hoy"
+Claude:
+1. Identifica la carpeta del día (ej: 260225)
+2. Guarda el archivo dentro de esa carpeta
+3. El archivo queda organizado junto al PRD
+```
+
+**Estructura generada:**
+```
+260225/
+  ├── PRD_20260225.md
+  ├── conversacion_proyecto_X.md  ← Nuevo
+  └── README.md
+```
+
+### Crear PRD Nuevo (Método Original)
 
 ```
 Usuario: "Vamos a crear el PRD de hoy"
 Claude:
 1. Obtiene fecha actual (ej: 16 de febrero de 2026)
-2. Verifica si existe PRD_260216.md
-3. Si no existe, crea usando scripts/create_daily_prd.py
+2. Si use_daily_folders=true, crea carpeta 260216
+3. Crea PRD_20260216.md dentro de la carpeta (o en ruta especificada)
 4. Abre el archivo para edición
 ```
 
@@ -178,12 +264,47 @@ Claude:
 5. Confirma generación exitosa
 ```
 
+### Generar Resumen del Día (NUEVO)
+
+```
+Usuario: "Dame un resumen del día" o "Genera resumen del día"
+Claude:
+1. Ejecuta: python scripts/generate_day_summary.py
+2. Analiza carpeta del día (ej: 260225)
+3. Lee metadatos de TODOS los archivos (fechas creación/modificación)
+4. Determina hora de inicio (primer archivo creado)
+5. Extrae tareas del PRD (completadas y pendientes)
+6. Calcula horas trabajadas
+7. Genera RESUMEN_260225.md con:
+   - Información general (inicio, tareas, horas, documentos)
+   - Tareas realizadas (con timestamps)
+   - Tareas pendientes
+   - Lista de todos los documentos con metadatos
+8. Confirma generación exitosa
+```
+
+**Ejemplo de salida:**
+```
+✅ Resumen generado exitosamente: 260225/RESUMEN_260225.md
+
+📊 Estadísticas:
+   - Tareas completadas: 5
+   - Tareas pendientes: 2
+   - Horas trabajadas: 7h 30m
+   - Documentos: 8
+```
+
 ## Características Clave
 
+✅ **Carpetas Diarias** - Organiza todo en carpetas YYMMDD (260225, 260226...)  
+✅ **Gestión Unificada** - PRD + conversaciones + documentos en un solo lugar  
+✅ **Metadatos de Archivos** - Rastrea fecha creación/modificación de documentos  
+✅ **Hora de Inicio Automática** - Detecta cuándo empezó el día (primer archivo)  
 ✅ **Formato Jerárquico** - Estructura clara con encabezados H3 y emojis  
 ✅ **Timestamps Exactos** - Registra hora de inicio de cada tarea  
 ✅ **Documentación Completa** - Descripción + Solución para auditoría  
-✅ **Reportes Automáticos** - Scripts Python/PowerShell generan horas  
+✅ **Resumen Automático del Día** - Analiza carpeta y genera reporte completo  
+✅ **Reportes de Horas** - Scripts Python/PowerShell generan horas trabajadas  
 ✅ **Gestión de Pendientes** - Seguimiento de tareas en progreso  
 ✅ **Git-friendly** - Markdown puro, fácil de versionear  
 ✅ **Rastreabilidad Completa** - Auditoría diaria con toda la información
@@ -216,21 +337,57 @@ Se implementó cliente Stripe official. Se integraron webhooks para confirmació
 
 ## Scripts Disponibles
 
-### create_daily_prd.py
+### create_daily_folder.py (NUEVO)
 
-Crea un nuevo archivo PRD_YYYYMMDD.md con estructura base.
+Crea una carpeta diaria con formato YYMMDD y README.md inicial.
 
 ```bash
-python scripts/create_daily_prd.py [--date 2026-02-16] [--output ./path]
+python scripts/create_daily_folder.py [--date 2026-02-25] [--path ./path]
 ```
+
+**Características:**
+- Crea carpeta con formato YYMMDD (260225 para 25 de febrero de 2026)
+- Genera README.md dentro de la carpeta con información del día
+- Verifica si la carpeta ya existe antes de crear
+
+### create_daily_prd.py (ACTUALIZADO)
+
+Crea un nuevo archivo PRD_YYYYMMDD.md **dentro de la carpeta del día**.
+
+```bash
+python scripts/create_daily_prd.py [--date 2026-02-16] [--path ./path]
+```
+
+**Novedades:**
+- Si `use_daily_folders: true` en config.json, crea automáticamente la carpeta YYMMDD
+- Guarda el PRD dentro de la carpeta del día
+- Incluye timestamp de creación en el documento
 
 ### create_daily_prd.ps1
 
-Versión PowerShell de creación de PRD.
+Versión PowerShell de creación de PRD con soporte para carpetas diarias.
 
 ```powershell
 .\scripts\create_daily_prd.ps1 -Date "2026-02-16" -Output "./path"
 ```
+
+### generate_day_summary.py (NUEVO)
+
+Analiza todos los archivos de la carpeta del día y genera un resumen completo.
+
+```bash
+python scripts/generate_day_summary.py [--date 20260225] [--path ./base] [--output ./reports]
+```
+
+**Características:**
+- Lee **metadatos** de todos los archivos (fecha creación, modificación, tamaño)
+- Determina **hora de inicio del día** (primer archivo creado)
+- Extrae **tareas del PRD** (completadas y pendientes)
+- Calcula **horas trabajadas** basado en timestamps
+- Lista **todos los documentos** generados en el día
+- Genera **RESUMEN_YYMMDD.md** con análisis completo
+
+**Output:** `RESUMEN_260225.md` dentro de la carpeta del día
 
 ### generate_hours_report.py
 
@@ -258,9 +415,19 @@ Antes de terminar el día, verifica:
 - [ ] ¿Cada solución explica QUÉ se hizo y POR QUÉ?
 - [ ] ¿Hay timestamps para cada tarea?
 - [ ] ¿Las tareas pendientes están claramente documentadas?
-- [ ] ¿El archivo está guardado con nombre PRD_YYYYMMDD.md?
-- [ ] ¿Has generado el reporte de horas? (python/powershell script)
+- [ ] ¿El PRD está guardado en la carpeta del día (YYMMDD)?
+- [ ] ¿Todos los documentos del día están en la carpeta diaria?
+- [ ] ¿Has generado el resumen del día? (`generate_day_summary.py`)
+- [ ] ¿Verificaste que el resumen incluye hora de inicio correcta?
+- [ ] ¿Generaste el reporte de horas detallado? (opcional: `generate_hours_report.py`)
 - [ ] ¿Validaste que los totales de horas son correctos?
+
+**NUEVO: Checklist Carpetas Diarias**
+
+- [ ] ¿La carpeta tiene formato YYMMDD correcto?
+- [ ] ¿Hay un README.md descriptivo en la carpeta?
+- [ ] ¿El RESUMEN_YYMMDD.md fue generado?
+- [ ] ¿Están todos los documentos relevantes archivados?
 
 ## Referencias
 

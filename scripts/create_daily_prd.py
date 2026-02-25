@@ -20,13 +20,15 @@ from pathlib import Path
 
 # Load configuration
 CONFIG_FILE = Path(__file__).parent.parent / "config.json"
-DEFAULT_OUTPUT_DIR = "."
+DEFAULT_BASE_DIR = "."
+USE_DAILY_FOLDERS = True
 
 if CONFIG_FILE.exists():
     try:
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            DEFAULT_OUTPUT_DIR = os.path.expanduser(config.get("prd_output_directory", "."))
+            DEFAULT_BASE_DIR = os.path.expanduser(config.get("prd_base_directory", "."))
+            USE_DAILY_FOLDERS = config.get("use_daily_folders", True)
     except Exception:
         pass
 
@@ -34,15 +36,16 @@ TEMPLATE = """# PRD - {date_spanish}
 
 ## Resumen Ejecutivo
 
-Documento de registro de tareas realizadas durante el día con descripciones, soluciones y horas de ejecución.
+- **Fecha**: {date_spanish}
+- **Tareas completadas**: 0
+- **Tareas pendientes**: 0
+- **Total de horas**: 0h 0m
 
 ---
 
 ## Tareas Realizadas
 
-| # | Tarea | Descripción | Solución | Hora |
-|---|-------|-------------|----------|------|
-| | | | | |
+*No hay tareas registradas aún*
 
 ---
 
@@ -56,6 +59,7 @@ Documento de registro de tareas realizadas durante el día con descripciones, so
 
 - Documento creado para seguimiento de tareas diarias
 - Se actualizará conforme se realicen actividades
+- Creado automáticamente el {timestamp}
 """
 
 SPANISH_MONTHS = {
@@ -102,7 +106,7 @@ def create_prd(date_str=None, path=None):
         tuple: (filename, filepath, success: bool, message: str)
     """
     if path is None:
-        path = DEFAULT_OUTPUT_DIR
+        path = DEFAULT_BASE_DIR
     
     # Determine date
     if date_str is None:
@@ -110,9 +114,17 @@ def create_prd(date_str=None, path=None):
     else:
         date_obj = parse_date(date_str)
     
-    # Create directory if it doesn't exist
-    output_dir = Path(path).expanduser()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Create base directory
+    base_dir = Path(path).expanduser()
+    base_dir.mkdir(parents=True, exist_ok=True)
+    
+    # If using daily folders, create YYMMDD folder structure
+    if USE_DAILY_FOLDERS:
+        folder_name = date_obj.strftime("%y%m%d")
+        output_dir = base_dir / folder_name
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        output_dir = base_dir
     
     # Generate filename
     date_formatted = date_obj.strftime("%Y%m%d")
@@ -125,7 +137,8 @@ def create_prd(date_str=None, path=None):
     
     # Generate content
     date_spanish = format_spanish_date(date_obj)
-    content = TEMPLATE.format(date_spanish=date_spanish)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    content = TEMPLATE.format(date_spanish=date_spanish, timestamp=timestamp)
     
     # Write file
     try:
@@ -142,13 +155,15 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python create_daily_prd.py                    # Crea PRD para hoy (en carpeta configurada)
+  python create_daily_prd.py                    # Crea PRD para hoy (en carpeta YYMMDD)
   python create_daily_prd.py --date 20260217   # Crea para fecha específica
-  python create_daily_prd.py --path ./My/Path  # Especifica carpeta de salida
+  python create_daily_prd.py --path ./My/Path  # Especifica carpeta base
+  
+Nota: Si use_daily_folders está activado en config.json, creará una carpeta YYMMDD
         """
     )
     parser.add_argument('--date', help='Fecha en formato YYYYMMDD (default: hoy)')
-    parser.add_argument('--path', default=None, help=f'Ruta de salida (default: {DEFAULT_OUTPUT_DIR})')
+    parser.add_argument('--path', default=None, help=f'Ruta base (default: {DEFAULT_BASE_DIR})')
     
     args = parser.parse_args()
     

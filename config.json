@@ -1,5 +1,11 @@
 {
-  "prd_output_directory": "~/Documents/prd_diarios",
-  "description": "Configuración por defecto para el skill prd-diario",
-  "notes": "Puedes sobrescribir estos valores usando los argumentos --path o --output en los scripts"
+  "prd_base_directory": "~/Documents/prd_diarios",
+  "use_daily_folders": true,
+  "description": "Configuración para el skill prd-diario con carpetas diarias",
+  "notes": "Puedes sobrescribir estos valores usando los argumentos --path o --output en los scripts",
+  "features": {
+    "daily_folders": "Organiza documentos en carpetas YYMMDD",
+    "auto_summary": "Genera resumen automático del día",
+    "file_metadata": "Rastrea fecha de creación de documentos"
+  }
 }
